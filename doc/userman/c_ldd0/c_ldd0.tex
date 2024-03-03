@@ -1,0 +1,1195 @@
+\chapter{Detailed Description of \emph{\productbasenameshort{}}}
+\label{cldd0}
+
+This chapter describes in detail the general features and characteristics
+of \emph{\productbasenameshort{}}\@.  Additionally, Chapters \ref{cuuc0}
+through \ref{ccip1} document the individual functions and constant data
+structures in the library, and Chapter \ref{cbpc0} documents how to build
+and modify the library.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Library Variants}
+\label{cldd0:sscc0}
+
+Table \ref{tbl:cldd0:sscc0:01} (p.  
+\pageref{tbl:cldd0:sscc0:01}) lists the available library 
+variants.  A library variant (\S{}\ref{ciov0:snom0:sdvt0}, 
+p.  \pageref{ciov0:snom0:sdvt0}) corresponds to a 
+combination of processor variant, compiler, compiler 
+options, and ABI; so Table \ref{tbl:cldd0:sscc0:01}, 
+nominally a table of library variants, also indicates which 
+processors and tool chains are supported.  
+
+\begin{table}
+\caption{\emph{\productbasenameshort{}} Library Variants}
+\label{tbl:cldd0:sscc0:01}
+\begin{center}
+\begin{tabular}{|c|l|l|l|}
+\hline
+Library & Processor & Compiler, Compiler Options, ABI                         & Remarks                               \\
+Variant & Variant   &                                                         &                                       \\
+\hline
+\hline
+   1    & x64       & \emph{Microsoft Visual Studio}                          &                                       \\
+        &           & (\index{Windows@\emph{Windows}}\emph{Windows} only)     &                                       \\
+        &           & Default compiler options, default ABI                   &                                       \\
+\hline
+   2    & x64       & \emph{gcc} for \index{----nix@\emph{*nix}}\emph{*nix}   &                                       \\
+        &           & Default compiler options, default ABI                   &                                       \\
+\hline
+   3    & PPC       & \emph{GHS} for \emph{PPC}                               &                                       \\
+        & Book      & (only \emph{Windows} supported)                         &                                       \\
+        & VLE       & Default compiler options, default ABI                   &                                       \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The library is not purely generic C code, and can't be 
+compiled for unsupported platforms, for two reasons.  First, 
+the library source code is generated from templates on a 
+per-library-variant basis, (\S{}\ref{cldd0:sgst0}, p.  
+\pageref{cldd0:sgst0}; \S{}\ref{cbpc0:sgsc0}, p.  
+\pageref{cbpc0:sgsc0}), so generating the library source 
+code for unsupported platforms requires modifying both the 
+generator and the templates.  Second, a small number of 
+library functions are partially or fully coded in 
+processor/\-tool/\-ABI-specific assembly-language 
+(\S{}\ref{cldd0:salf0}, p.  \pageref{cldd0:salf0}), and no 
+generic \emph{C}/\emph{C++} equivalent is provided.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Minimal Footprint in the Embedded Software}
+\label{cldd0:smfe0}
+
+\emph{\productbasenameshort{}} is arranged as a ``true'' (or 
+``traditional'') library, where the linker extracts only the 
+functions and data necessary to support the use of the 
+library by the client software.  The 
+\emph{\productbasenameshort{}} footprint in the embedded 
+software will be automatically minimized by using one 
+translation unit per function or data structure, and by the 
+nature of the library linking process.  
+
+Some linkers scan a library multiple times until no new 
+symbols are resolved (so that the ordering of object files 
+within the library doesn't matter), but some require 
+references to symbols to come before definitions.  Rather 
+than manually specifying the order of object files, the 
+templating language supports ``requires'' and ``provides'' 
+information so that the library creation process 
+automatically includes object modules in a suitable 
+order.\footnote{This also provides a calling tree for the 
+library.} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Memory Allocation Paradigm}
+\label{cldd0:smap0}
+
+\emph{\productbasenameshort{}} contains no calls to dynamic 
+memory allocation functions.  This is consistent with 
+standard practice in embedded systems.  
+
+All RAM used by \emph{\productbasenameshort{}} is either 
+storage class \emph{auto} (allocated on the stack), storage 
+class \emph{register} (functionally the same as 
+\emph{auto}), or part of a buffer area provided by the 
+caller.  
+
+\emph{\productbasenameshort{}} allocates small variables 
+(integers, pointers) as \emph{auto}\@.  Larger variables 
+(large integer inputs, large integer outputs, cryptographic 
+hash state, etc.) are in memory areas provided by the 
+caller.  
+
+In embedded computing environments where stack is limited, 
+this strategy allows the client software to decide the best 
+place to locate large memory blocks (and the client software 
+may still allocate large memory blocks on the stack and 
+provide these to the called \emph{\productbasenameshort{}} 
+function if appropriate for the computing environment).  
+
+This strategy also pushes thread-safety and core-safety 
+issues up to the client software: 
+
+\begin{itemize}
+\item \emph{auto} storage is always thread-safe and
+      core-safe.
+\item Since the memory for input parameters, output
+      parameters, and large temporary storage always
+      belongs to the caller, the caller must deal
+      with any thread-safety and core-safety issues.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Security of the Library}
+\label{cldd0:sstl0}
+
+Need to resolve the following questions:
+
+Open questions:
+
+\begin{itemize}
+\item Are there any security standards or best practices
+      that apply to cryptographic implementations?
+\item Are there any requirements or best practices for 
+      clearing memory? (I've noticed
+      that some implementations clear memory of
+      keys as soon as they
+      are no longer required.  This is obvious.
+      But it also might be
+      possible to leak information via stack frame
+      contents that persist
+      after functions return.  Any standards for
+      clearing this?)
+\item How does one clear variables that are \emph{auto}?
+      Setting the variable at the end of a function won't 
+      have any effect, because any optimizing compiler will 
+      remove the statements.  Declaring variables 
+      \emph{volatile}?  Using some sort of a cast involving 
+      a pointer to something volatile?
+\item Any techniques for resistance to side channel 
+      attacks?
+\item Any other security best practices?
+\end{itemize}
+
+Need to get this settled in terms of design and interfaces.
+And best practices.
+The two most attractive and obvious approaches are:
+
+\begin{itemize}
+\item Pass a parameter in to indicate whether security
+      is required.
+\item Provide both secure and insecure functions.  (The
+      FLASH bloat may not be as bad as one would think,
+      because many secure functions could possibly
+      be 
+      expressed as calls to insecure functions with 
+      additional memory security added.)
+\end{itemize}
+
+The first approach is likely the more attractive.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Thread Safety}
+\label{cldd0:stsf0}
+
+The notion of \index{thread-safe}thread safety is discussed 
+in \S{}\ref{cgct0:sipc0} (p.  \pageref{cgct0:sipc0}).  
+
+All functions in \emph{\productbasenameshort{}} are 
+thread-safe in that they can be safely called from multiple 
+threads running on the same core, with the following notes 
+and restrictions: 
+
+\begin{itemize}
+\item The memory areas supplied by the client software
+      can't be read or written by other threads in a 
+      conflicting way until after the
+      \emph{\productbasenameshort{}} function has returned
+      (it is the client software's responsibility to ensure 
+      this).
+\item Memory barriers aren't necessary before or after calls
+      into \emph{\productbasenameshort{}}\@.  (The reason is 
+      that all processors I'm aware of ensure that any 
+      stream of instructions, including one that
+      occurs as the result of an interrupt, is handled
+      correctly.  An interrupt is necessary to switch to 
+      another thread, i.e. the switch can't happen
+      \emph{without} an interrupt.)
+\item Compiler barriers aren't necessary before or after
+      calls into \emph{\productbasenameshort{}}\@.  (The  
+      reason is that \index{inline
+      function@\emph{inline} function}\emph{inline} 
+      interface functions are prohbited by 
+      \emph{\productbasenameshort{}} design rules, so all
+      calls to \emph{\productbasenameshort{}} function
+      are true calls.  The compiler is not free to 
+      reorganize statements beyond a function
+      boundary, so the packaging of a function creates
+      inherent compiler barriers.)
+\end{itemize}
+
+All functions in \emph{\productbasenameshort{}} can also 
+generally be called from an interrupt context, so long as 
+the restrictions above are met and so long as the way the 
+ISR is wrapped supports the ABI assumptions\@.  (ABI 
+adherence is required because it would be possible to 
+accidentally call a \emph{\productbasenameshort{}} function 
+that modifies a CPU register not saved and restored by the 
+ISR wrapper.) 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Core Safety}
+\label{cldd0:scsf0}
+
+By \index{core-safe}\emph{core-safe}, I mean that a function 
+can be safely used by multiple processor cores in an 
+SMP\footnote{The term \emph{SMP} is misused here, as 
+described in \S{}\ref{ciov0:snom0:sptr0}, p.  
+\pageref{ciov0:snom0:sptr0}.} system, with only one copy of 
+the function contained in FLASH memory.  
+
+All functions in \emph{\productbasenameshort{}} are core-safe,
+so long as the following conditions are met:
+
+\begin{itemize}
+\item The restrictions discussed for thread safety in
+      \S{}\ref{cldd0:stsf0} (p.  \pageref{cldd0:stsf0})
+      are met, both for ordinary and interrupt context.
+\item Some mechanism is used to ensure that multiple cores
+      cannot access the same input, input/output, output, or 
+      scratchpad memory at the same time.\footnote{The
+      assumption is made that the stacks allocated to each
+      process on each core are separate so that \emph{auto} 
+      and \emph{register} variables are distinct.  No 
+      software architecture I'm aware of violates this
+      assumption.}
+\item Memory barriers, cache line flushes, and cache line
+      invalidations are used as necessary in the
+      coordination between cores (see
+      \S{}\ref{cgct0:sooe0}, p. \pageref{cgct0:sooe0};
+      \S{}\ref{cgct0:scco0}, p. \pageref{cgct0:scco0}).
+      For example, assume
+      that \emph{Core} $\alpha$ calls a function in
+      \emph{\productbasenameshort{}} then sets a flag
+      $f$ to \emph{true} to
+      signal to \emph{Core} $\beta$ that data from
+      the function call is ready.
+      \begin{itemize}
+      \item On the part of \emph{Core} $\alpha$, after the
+            call into \emph{\productbasenameshort{}}, the 
+            following steps may be required:
+            \begin{itemize}
+            \item A memory barrier instruction to ensure
+                  that there
+                  are no lingering
+                  writes not completed from the call into
+                  \emph{\productbasenameshort{}}.
+            \item A cache line flush instruction to ensure
+                  that the data
+                  from the function
+                  call is written to RAM.
+            \item Set \emph{f} to \emph{true}.
+            \item A cache line flush instruction to ensure
+                  that the changed value of
+                  \emph{f} is written to RAM.
+            \end{itemize}
+      \item On the part of \emph{Core} $\beta$, to receive
+            the data,
+            the following steps may be required:
+            \begin{itemize}
+            \item A cache line invalidation instruction to
+                  invalidate the
+                  cache line containing $f$.
+            \item A test of $f$.
+            \item If $f$ is \emph{true}:
+                  \begin{itemize}
+                  \item A cache line invalidation
+                        instruction to invalidate
+                        the cache line containing the data.
+                  \item Use of the data.
+                  \end{itemize}
+            \end{itemize}
+      \end{itemize}
+\end{itemize}
+
+The approach taken by \emph{\productbasenameshort{}} is to 
+allow the client software to handle threading and core 
+coordination issues.  Handling these issues is potentially 
+complex (as illustrated by the example above).  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Representation of Numbers}
+\label{cldd0:srnm0}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Native Unsigned and Signed Integers}
+\label{cldd0:srnm0:srin0}
+
+In all cases, \emph{\productbasenameshort{}} represents 
+native integers in the same way as the compiler; and the 
+compiler, in turn, invariably represents native integers in 
+the same way as the processor.  
+
+Although the \emph{C}/\emph{C++} language allows 
+representations of signed integers other than two's 
+complement, \emph{\productbasenameshort{}} will support 
+only\footnote{Representation assumptions always creep into 
+code when the goal is to be efficient.  I'm not aware of any 
+modern microcontroller that \emph{doesn't} use two's 
+complement representation for native integers.} processors 
+that use two's complement representation of signed integers.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Large Unsigned Integers}
+\label{cldd0:srnm0:srlu0}
+
+Efficient large integer arithmetic has been studied 
+extensively.  Efficient arithmetic on large integer operands 
+relies on using the machine instructions available for small 
+integer operands repeatedly in order to operate on large 
+integer operands.  To quote and paraphrase Knuth \cite[pp.  
+265-266]{bibref:b:TaocpVolume2}: 
+
+\begin{em}
+\begin{quote}
+The most important fact to understand about 
+extended-precision numbers is that they may be regarded as 
+numbers written in radix $w$ notation, where $w$ is the 
+computer's word size.  For example, an integer that fills 10 
+words on a computer whose word size is $w=10^{10}$ has 100 
+decimal digits; but we will consider it to be a 10-place 
+number to the base $10^{10}$.  This viewpoint is justified 
+for the same reason that we may convert, say, from binary to 
+hexadecimal notation, simply by grouping the bits together.  
+
+In these terms, we are given the following primitive 
+operations to work with: 
+
+\begin{enumerate}
+\item \label{cldd0:snom0:scan0:e1:n1}addition or subtraction
+      of one-place integers, giving a one-place answer and a 
+      carry;
+\item \label{cldd0:snom0:scan0:e1:n2}multiplication of a
+      one-place integer by another one-place integer, giving 
+      a two-place answer;
+\item \label{cldd0:snom0:scan0:e1:n3}division of a two-place
+      integer by a one-place integer, provided that the 
+      quotient is a one-place integer, and yielding also a 
+      one-place remainder.
+\end{enumerate}
+
+By adjusting the word size, if necessary, nearly all 
+computers will have these three operations available; so we 
+will construct algorithms for addition, subtraction, 
+multiplication, and division of arbitrary-size integers in 
+terms of the primitive operations 
+(\ref{cldd0:snom0:scan0:e1:n1}), 
+(\ref{cldd0:snom0:scan0:e1:n2}), and 
+(\ref{cldd0:snom0:scan0:e1:n3}).  
+\end{quote}
+\end{em}
+
+Processors may vary from Knuth's description above in two ways:
+
+\begin{itemize}
+\item Some low-end processors do not have some instruction
+      types at all.  (Among 8-bit microcontrollers, for 
+      example, some do not have an integer division
+      instruction, some do not have a integer multipication
+      instruction, and
+      some do not have either.)
+\item Some instruction sets don't match\footnote{For
+      example, a processor may have a 32-bit integer 
+      multiplication instruction that produces a
+      64-bit result, but not have a corresponding integer
+      division instruction
+      that accepts a 64-bit divisor.} Knuth's description
+      in \cite[pp.
+      265-266]{bibref:b:TaocpVolume2}, so that the natural
+      limb size for some
+      arithmetic operations may be different than for other
+      arithmetic
+      operations.  In these cases, deciding on a limb size
+      may be subjective or
+      involve some inelegant code to compensate for the
+      irregular instruction
+      set.
+\end{itemize}
+
+%Note:  GMP Library \index'd outside of footnote below to
+%       work around LaTeX issue.  See description at end of 
+%       file.
+I define \index{limb size}\emph{limb size}\index{GMP 
+Library@\emph{GMP Library}}\footnote{The terms \emph{limb} 
+and \emph{limb size} come from \emph{The GMP Library} 
+\cite{bibref:w:gmplibhomepage}.} as the number of bits in 
+what Knuth calls $w$ (from the quote above).  
+
+In \emph{\productbasenameshort{}}, large integers are 
+represented as arrays of what I call \emph{limbs}, where a 
+limb is of the \emph{C}/\emph{C++} native data type that 
+contains \emph{limb size} bits and is the integral native 
+data type most suited for the purpose.\footnote{Although it 
+varies across processors and compilers, a typical limb size 
+is 32 bits, and a typical limb is a \emph{C}/\emph{C++} 
+\emph{unsigned int}.} The least significant limb is stored 
+first, as \emph{C}/\emph{C++} array element 
+[0].\footnote{For humans, this is perhaps a counterintuitive 
+order.  However, this order simplifies functions that 
+perform arithmetic limb-by-limb, and is the de facto 
+standard order in software that implements large integer 
+arithmetic.} 
+
+Due to endianness issues, if large integers are represented 
+as arrays of limbs (where each limb is larger than one 
+byte), there is no portable way to access these large 
+integers as an array of another data type (as an array of 
+\emph{unsigned char}s, for example).  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Large Signed Integers}
+\label{cldd0:srnm0:srls0}
+
+Conceptually, a large signed integer could be represented in 
+\index{two's complement}two's complement form, with the 
+number distributed over an array of limbs.  If that were 
+done, addition, subtraction, and comparison would be 
+efficient.  
+
+However, the problems introduced by a two's complement 
+representation of large signed integers would be: 
+
+\begin{itemize}
+\item Multiplication and division would be awkward and
+      potentially require negating the large signed integer
+      before the
+      operation.
+\item Negating a large signed integer takes time.
+\item Negating a large signed integer requires additional
+      memory\@.  (Because
+      the input parameters to \emph{\productbasenameshort{}}
+      are typically
+      constants passed by reference, they can't be negated
+      in place.)
+\end{itemize}
+
+Because of the problems associated with a two's complement 
+representation of large signed integers, the representation 
+used by \emph{\productbasenameshort{}} is 
+\index{sign-magnitude}\emph{sign-magnitude}.  The most 
+significant bit of the most significant limb is reserved as 
+a sign bit, and all other bits contain the magnitude.  A 
+value of 0 for the sign bit implies zero or a positive 
+number, and a value of 1 for the sign bit implies a negative 
+number.  
+
+This representation has the disadvantage that there are two 
+representations of 0---one with the sign bit clear and one 
+with the sign bit set (for brevity, I will call these two 
+representations $+0$ and $-0$, respectively).  
+
+To minimize the repercussions of two representations of 0, 
+\emph{\productbasenameshort{}} has the following guaranteed 
+behavior: 
+
+\begin{itemize}
+\item Canonically, $+0$ is defined to be the only proper
+      representation of 0.
+\item \emph{\productbasenameshort{}} is written so that
+      $-0$ as input to a
+      function will always
+      produce the same result as $+0$.\footnote{However,
+      there
+      is no guarantee made of equal execution time,
+      although any difference
+      will be small.}
+\item In any context where \emph{\productbasenameshort{}}
+      produces a result
+      of 0, it will produce $+0$.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Native Unsigned and Signed Fixed-Point Numbers}
+\label{cldd0:srnm0:snfp0}
+
+Native fixed point numbers are represented in the same way as native
+integers (\S{}\ref{cldd0:srnm0:srin0}).  $k$ is always chosen to be a
+power of two in order to place the radix point between two bits.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Large Unsigned Fixed-Point Numbers}
+\label{cldd0:srnm0:srlu5}
+
+Large unsigned fixed point numbers are represented in the same way as
+large unsigned integers (\S{}\ref{cldd0:srnm0:srlu0}).  $k$ is always
+chosen to be a power of two in order to place the radix point between two
+bits.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Large Signed Fixed-Point Numbers}
+\label{cldd0:srnm0:srlu6}
+
+Large signed fixed point numbers are represented in the same 
+way as large signed integers (\S{}\ref{cldd0:srnm0:srls0}).  
+$k$ is always chosen to be a power of two in order to place 
+the radix point between two bits.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Native Floating-Point Numbers}
+\label{cldd0:srnm0:sfpn0}
+
+No decision has been made yet on the representation of 
+native floating-point numbers (there are too many open 
+questions, below).  
+
+My original position was that floating-point numbers aren't 
+useful in embedded computing, primarily due to the high cost 
+of performing floating-point arithmetic in software.  
+However, \index{Davidson, Eileen A.}Eileen Davidson 
+\cite{bibref:i:EileenADavidson} pointed out that many modern 
+microcontrollers implement floating-point arithmetic in 
+hardware, so that efficiency concerns may not apply.  
+
+Questions:
+
+\begin{itemize}
+\item How fast is a typical FPU:
+      \begin{itemize}
+      \item Compared to integer operations, including
+            effects on the
+            pipeline?
+      \item Compared to software implementation of the
+            floating-point
+            operations?
+      \end{itemize}
+\item What data types are accepted?  (I remember some older
+      FPU's would handle the equivalent of both
+      floats and doubles.)  The answer to this question may
+      imply that there is more than one native
+      representation.
+\item Are the data types covered by a standard (perhaps an
+      IEEE standard)?
+\item Do whatever standards are adhered to require an
+      exact and defined answer to any floating-point
+      operation?  The answer to this question has two
+      implications:
+      \begin{itemize}
+      \item Precise accuracy requirements may help to
+            rigorously verify certain mathematical
+            algorithms.
+      \item If two different FPU's from different sources
+            aren't required to generate the same result,
+            down to the bit, testing on one platform may
+            have no bearing on testing on another platform
+            (unlike integers and integer operations, which
+            are exactly defined).
+      \end{itemize}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Large Floating-Point Numbers}
+\label{cldd0:srnm0:sfpl0}
+
+It isn't clear if there is any meaningful notion of a 
+``large'' or ``extended-precision'' floating-point number 
+that has any usefulness in microcontroller work.  
+
+Questions:
+
+\begin{itemize}
+\item How does \emph{The GMP Library} implement
+      arbitrary-precision floating-point numbers (there are 
+      probably some lessons to be learned there)?
+\item Are there any standards for large
+      floating-point numbers?
+\item Can an FPU be used to assist in the calculation of
+      floating-point operands larger than it can handle?
+\item Can an FPU be used to assist with integer
+      calculations?
+\item Can integer instructions be used to assist with large
+      floating-point operations?
+\end{itemize}
+
+The answers to the last three questions aren't obvious at 
+all without more investigation.  The best known algorithm 
+for large integer division involves using the built-in 
+\emph{DIV} instruction to estimate the next word of the 
+quotient.  This may be counterintuitive.  The best 
+algorithms for large floating-point operations may also be 
+counterintuitive.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Generation of Source Code from Templates}
+\label{cldd0:sgst0}
+
+To keep the library source code uncluttered for review, unit 
+testing, and debugging, the source code is generated on a 
+per-library-variant basis by a generator, which is a generic 
+C program (\S{}\ref{cbpc0:sgsc0}, p.  
+\pageref{cbpc0:sgsc0}).  This results in unique source code 
+for each processor / tool / ABI combination.  
+
+After generation, the source code that is used to produce a 
+library has preprocessor switches only for tuning the 
+library (\S{}\ref{cbpc0:sltl0}, p.  \pageref{cbpc0:sltl0}).  
+All other variability is removed from the source code and 
+build process by the generation process.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Assembly-Language Functions}
+\label{cldd0:salf0}
+
+Certain \emph{\productbasenameshort{}} functions and 
+portions of functions are written in assembly-language.  The 
+assembly-language is potentially 
+pro\-ces\-sor-var\-i\-ant-spe\-cif\-ic, tool-spe\-cif\-ic, 
+and ABI-spe\-cif\-ic.  
+
+Assembly-language for some low-level operations is necessary 
+in numerical and cryptographic libraries.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Supported Versions of the \emph{C}/\emph{C++} Language}
+\label{cldd0:sscv0}
+
+This will have to be codified, but I don't expect any 
+difficulties with any modern \emph{C} or \emph{C++} 
+compilers.  The \emph{C++} language standard specifies a 
+preprocessor symbol that is defined only when using a 
+\emph{C++} compiler, and this can be used to conditionally 
+insert ``\texttt{extern "C"}'' in the compile stream (which 
+causes a \emph{C++} compiler to use \emph{C} function naming 
+and calling conventions, i.e.  doesn't use the name mangling 
+scheme).  I don't see any reason that the library can't be 
+used easily from any modern version of \emph{C}/\emph{C++}.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Formal Parameters and Return Values of Functions}
+\label{cldd0:sfcp0}
+
+In all cases, the formal parameters and return value of a 
+\emph{\productbasenameshort{}} interface function will take 
+exactly one of two forms, \emph{simple} or \emph{extended}, 
+described below.  
+
+The purpose of imposing design rules on the formal 
+parameters and return value is to simplify the use of the 
+library by restricting the \emph{\productbasenameshort{}} 
+interface styles.  
+
+The design rules presented here do not apply to 
+\emph{internal} interfaces in 
+\emph{\productbasenameshort{}}\@.  They apply only to 
+interfaces between client software and 
+\emph{\productbasenameshort{}}.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Simple Interface Style}
+\label{cldd0:sfcp0:sifs0}
+
+The \emph{simple interface style} can be used if the 
+following conditions are met: 
+
+\begin{itemize}
+\item Function input(s) consist of only \emph{C}/\emph{C++}
+      native data types, \emph{and}
+\item All function inputs are passed by value (not by
+      reference), \emph{and}
+\item The function returns a \emph{single} output, 
+      a \emph{C}/\emph{C++}
+      native data type, \emph{and}
+\item The function does not return a result code with
+      success/failure
+      information, but instead returns only data, \emph{and}
+\item The function does not require any temporary memory
+      allocated by the client software.
+\end{itemize}
+
+A typical function using a simple interface style might be 
+something like \texttt{unsigned UcuUiSqrt(unsigned arg)} or 
+\texttt{unsigned UcuUiMax2(unsigned arg1, unsigned arg2)}.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Extended Interface Style}
+\label{cldd0:sfcp0:sefs0}
+
+The extended interface style must be used if any of the
+following conditions are met:
+
+\begin{itemize}
+\item Function input(s) involve non-native data types,
+      \emph{or}
+\item Any function inputs are passed by reference (as might
+      be natural for large inputs where pushing them on the 
+      stack would be ill-advised), \emph{or}
+\item The function returns more than one output, \emph{or}
+\item The function returns an output that is not a
+      \emph{C}/\emph{C++} native data type, \emph{or}
+\item The function returns a result code with
+      success/failure information, \emph{or}
+\item The function requires temporary memory
+      allocated by the client software.
+\end{itemize}
+
+A function that uses the the extended interface style has a 
+return value and formal parameter list that follows these 
+rules: 
+
+\begin{itemize}
+\item The function return type must be \emph{void}.
+\item The parameter list consists, in order, of:
+      \begin{itemize}
+      \item $[$Output$]$ One or more status/result codes,
+            returned by reference:
+            \begin{itemize}
+            \item These status/result codes may be:
+                  \begin{itemize}
+                  \item Boolean values (some condition did
+                        or did not occur).
+                  \item Bit-masked or bit-packed.
+                  \item Enumerated.
+                  \item Numerical (number of tasks
+                        successfully completed, for 
+                        example).
+                  \end{itemize}
+            \item If allowed by the function documentation,
+                  the
+                  pointers may be NULL\@.  NULL signifies
+                  that the client
+                  software isn't interested in the output.
+            \end{itemize}
+      \item $[$Output$]$ One or more data outputs, returned
+            by reference:
+            \begin{itemize}
+            \item The output values may be of any type.
+            \item The memory areas supplied for different
+                  formal parameters
+                  may never overlap (in some cases, to save
+                  memory, the
+                  \emph{\productbasenameshort{}} function
+                  may use the
+                  ``output'' memory areas for temporary
+                  storage during the
+                  execution of the function, and overlapping
+                  areas may
+                  cause the \emph{\productbasenameshort{}}
+                  function to behave
+                  incorrectly).
+            \item If allowed by the function documentation,
+                  the
+                  pointers may be NULL\@.  NULL signifies
+                  that the client
+                  software isn't interested in the output.
+            \end{itemize}
+      \item $[$Input/Output$]$ One or more data
+            inputs/outputs, passed and
+            returned by reference:
+            \begin{itemize}
+            \item The input/output values may be of any
+                  type.
+            \item The memory areas supplied for different
+                  formal parameters
+                  may never overlap (in some cases, the
+                  \emph{\productbasenameshort{}} function
+                  may use the
+                  input/output memory areas for temporary
+                  storage during the
+                  execution of the function, and overlapping
+                  areas may
+                  cause the \emph{\productbasenameshort{}}
+                  function to behave
+                  incorrectly).
+            \item If allowed by the function documentation,
+                  the
+                  pointers may be NULL\@.  NULL signifies
+                  that the client
+                  software doesn't provide this input and/or
+                  isn't interested in this
+                  output.
+            \end{itemize}
+      \item $[$Input$]$ One or more data inputs, passed by
+            value or by reference:
+            \begin{itemize}
+            \item The input values may be of any type.
+            \item In the case of data passed by reference,
+                  it is guaranteed
+                  that the \emph{\productbasenameshort{}}
+                  function
+                  will never execute a write to the memory
+                  area containing
+                  the input.
+            \item The input values will typically be
+                  declared \texttt{const *}.
+            \item The input memory areas may overlap with
+                  each other, but may not overlap
+                  with input/output, output, or scratchpad
+                  memory parameters.
+            \item If allowed by the function documentation,
+                  the
+                  pointers may be NULL\@.  NULL signifies
+                  that the client
+                  software doesn't provide this input.
+            \end{itemize}
+      \item $[$Scratchpad$]$\footnote{Yes, I'm looking for
+            a better name to describe this
+            type of parameter.}  One or more memory areas,
+            passed by reference:
+            \begin{itemize}
+            \item Will be used by the
+                  \emph{\productbasenameshort{}} function 
+                  for
+                  ``large'' temporary storage that is only
+                  required while the
+                  function executes.
+            \item In some cases, might be allocated from
+                  the stack by the client software.
+            \item Do not need to be initialized in any way
+                  before being used in
+                  \emph{\productbasenameshort{}} function
+                  calls.
+            \item Values need not be retained by the client
+                  software after the 
+                  \emph{\productbasenameshort{}} function
+                  returns.
+            \item No assumptions can be made by the client
+                  software about the contents
+                  after the \emph{\productbasenameshort{}}
+                  function returns.
+            \item Memory blocks will have a ``* struct''
+                  type, so that the client software
+                  allocates the right amount of memory
+                  just by defining a variable.
+            \item In many cases, the client software would
+                  likely \emph{union} many of these
+                  \emph{scratchpad} types together, since
+                  they aren't used concurrently (this
+                  allows the compiler to select the minimum
+                  space required).
+            \item These memory areas can't overlap with any
+                  other parameters.
+            \item If allowed by the function documentation,
+                  the
+                  pointers may be NULL\@.  NULL signifies 
+                  that the client
+                  software won't provide this input.
+                  However, I would expect that
+                  the scratchpad areas are always required
+                  if they are ever required.
+            \end{itemize}
+      \end{itemize}
+\end{itemize}
+
+An example combining the ideas for the extended interface 
+style may be helpful.  
+
+\begin{verbatim}
+#include "uculib.h" //Function and data structure definitions for //clients of the library.
+
+//Assume that the UCU Library contains a large unsigned integer
+//multiplication function that requires two "scratchpad" areas
+//of memory to operate (very contrived).
+
+//Overlay several scratch areas.  This lets the compiler figure
+//out largest size.
+union
+{
+   UCU_MUL_SCRATCH_TYPE_A mul_scratch_a;
+      //Must be provided by the caller.  Doesn't matter where from.
+      //Here it is global memory.
+   UCU_DIV_SCRATCH_TYPE_A div_scratch_a;
+      //Assume we call a division function somewhere in main() as
+      //well.  Since the multiplication and division function can't
+      //be active at the same time, the "scratch" areas can be
+      //overlaid.
+} my_union;
+
+int main(void)
+{
+   UCU_MUL_RESULT mul_result;
+   UCU_MUL_SCRATCH_TYPE_B mul_scratch_b;
+      //Second scratch area is on stack.  This might be done
+      //sometimes.
+
+   UCU_UI1024 ui1024;
+   UCU_UI2048 ui2048;
+
+   //Somehow, we initialize ui1024 here.
+
+   //Actually call the multiplication function.  The
+   //parameter types come in the order listed above.
+   UcuU2048U1024U1024UMul
+   (
+      &mul_result,   //Success/fail and exception codes
+                     //filled in by function.
+      &ui2048,       //Result of multiplication.
+      &ui1024,       //First input.
+      &ui1024,       //Second input.  Coincident memory can
+                     //only be used with inputs.
+      &my_union.mul_scratch_a,
+                     //First scratch area to be used during
+                     //the function call.  Where this memory
+                     //comes from is left to the client
+                     //software.
+      &mul_scratch_b //Second scratch area to be used during
+                     //the function call.  Where this memory
+                     //comes from is left to the client
+                     //software.
+   );
+
+   return 0;
+}
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Library Versioning}
+\label{cldd0:slvn0}
+
+\index{versioning (library)}Version numbers of the library are of the
+form \emph{j.m-} (example: \emph{2.5c}) where:
+
+\begin{itemize}
+\item \emph{j} is the major version number, a non-negative
+      integer.
+\item \emph{m} is the minor version number, a non-negative
+      integer.
+\item \emph{-} is the bug fix version number, a non-negative
+      integer.  The bug fix version number
+      is represented as a letter in documentation (for
+      example, the `c' in `2.5c').
+      When represented as an integer, the correspondence
+      is that the letter `a' is represented by 0,
+      the letter `b' by 1, etc.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Library Binary File Naming Conventions}
+\label{cldd0:slpn0}
+
+\index{naming conventions (library)}%
+A typical binary library file name is 
+``\emph{libucu\_2\_5c\_1.sm8}''.
+In order, the binary library file name contains the
+following components:
+
+\begin{itemize}
+\item The characters \emph{libucu\_} (a constant string
+      to identify the library).
+\item The version number of the library followed by an
+      underscore
+      (example: `\emph{2\_5c\_}').
+\item The library variant integer identifier, followed by
+      an underscore.  (This integer
+      is selected from Table \ref{tbl:cldd0:sscc0:01}.)
+\item A period followed by a filename extension traditional
+      for the
+      development tools associated with that library
+      variant.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Function Naming Conventions}
+\label{cldd0:sfnc0}
+
+A typical function name within the general library is 
+`\emph{UcuLfU16FiltAFiltRxx}'.  Function names within the 
+general library usually consist of the following components, 
+with some components optional.  
+
+The first component is the string ``\emph{Ucu}''\@.  This 
+string serves two purposes.  First, it identifies a function 
+as a member of the \emph{\productbasenameshort{}}.  Second, 
+it helps to prevent global name collisions.  
+
+The second component is two characters representing the 
+function family (selected from Table 
+\ref{tbl:cldd0:slcv0:sfnc0:03}).  
+
+The third component is a string representing the types of 
+the outputs input/outputs, and inputs.  The error/status 
+outputs and scratchpad parameters, if any, don't need to be 
+cited.  This section of the name serves to prevent name 
+collisions among functions that perform the same function 
+but on different data types.  For each output, input/output, 
+or input; in the same order as the formal parameter list; 
+these conventions are used: 
+
+\begin{itemize}
+\item For parameters of types that are native C types:
+      \begin{itemize}
+      \item ``Uc'' for unsigned character.
+      \item ``Sc'' for signed character.
+      \item ``Us'' for unsigned short integer.
+      \item ``Ss'' for signed short integer.
+      \item ``Ui'' for integer.
+      \item ``Si'' for signed integer.
+      \item ``Ul'' for unsigned long integer.
+      \item ``Sl'' for signed long integer.
+      \item ``Ull'' for unsigned long long integer.
+      \item ``Sll'' for signed long long integer.
+      \end{itemize}
+\item For parameters that are integers of a specific size
+      (or, that aren't
+      integers but naturally can be represented the same
+      way).
+      \begin{itemize}
+      \item Integers are denoted by `U' (unsigned) or `S'
+            (signed), followed by the
+            number of bits in the integer
+            (for example, ``U1024'').
+      \item If the integer is provided in a native data
+            type (rather than a
+            structure), the string is suffixed with `n'.
+            Example:  ``U64n''.
+      \end{itemize}
+\end{itemize}
+
+For inputs or outputs where there are several of the same 
+type, ``\_\underscorepostspace{}n'' may be used to denote 
+this compactly.  For example, 
+``U1024\_\underscorepostspace{}3'' would indicate that the 
+function returns three separate 1024-bit unsigned integers.  
+In this notation, inputs, input/outputs, and outputs may not 
+be combined.  For example, a function that takes three 
+1024-bit unsigned integer inputs and returns two 1024-bit 
+unsigned integer outputs would use the string 
+``U1024\_\underscorepostspace{}3U1024\_\underscorepostspace{}2'' 
+rather than ``U1024\_\underscorepostspace{}5''.  
+
+If a function operates on a characteristic data type in a 
+way where there would never be a naming collision if some 
+parameters were not incorporated into the naming convention, 
+only this characteristic data type needs to be used.  For 
+example, ``UcuU32FiltLpFo'' might be an acceptable name for 
+a first-order low-pass filter that accepts a 32-bit unsigned 
+integer as input and provides a 32-bit unsigned integer as 
+output.  This name is potentially acceptable because one 
+data type (U32) drives multiple parameters, and there would 
+not be a naming collision with a similar filter that filters 
+other data types.  
+
+The fourth and final component is the function name, with 
+possible qualifiers.  Generally, the function name should go 
+from general to specific, i.e.  ``FilterSecondOrder'' rather 
+than ``SecondOrderFilter''.  
+
+\begin{table}
+\caption{\emph{\productbasenameshort{}} Function Family Code}
+\label{tbl:cldd0:slcv0:sfnc0:03}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Function       & Meaning                                                                     \\
+Family         &                                                                             \\
+Code           &                                                                             \\
+\hline
+\hline
+\texttt{Ut}    & Utility or miscellaneous function (Chapter \ref{cnef0}).                    \\
+\hline
+\texttt{Bm}    & Block memory function (Chapter \ref{cbmf0}).                                \\
+\hline
+\texttt{Se}    & Search function (Chapter \ref{csea0}).                                      \\
+\hline
+\texttt{So}    & Sort function (Chapter \ref{csol0}).                                        \\
+\hline
+\texttt{Am}    & Array manipulation function (Chapter \ref{cami0}).                          \\
+\hline
+\texttt{Bt}    & Bit-mapped set function (Chapter \ref{cbsf0}).                              \\
+\hline
+\texttt{Vc}    & Vertical counter function (Chapter \ref{cvco0}).                            \\
+\hline
+\texttt{Na}    & Native integer utility/arithmetic function (Chapter \ref{cafn0}).           \\
+\hline
+\texttt{Nm}    & Native integer mathematical function (Chapter \ref{cbaf0}).                 \\
+\hline
+\texttt{Pa}    & Native fixed-point utility/arithmetic function (Chapter \ref{cfpa0}).       \\
+\hline
+\texttt{Pm}    & Native fixed-point mathematical function (Chapter \ref{cfpa0}).             \\
+\hline
+\texttt{Fa}    & Native floating-point utility/arithmetic function (Chapter \ref{caal1}).    \\
+\hline
+\texttt{Fm}    & Native floating-point mathematical function (Chapter \ref{cafn0}).          \\
+\hline
+\texttt{Oa}    & Large integer utility/arithmetic function (Chapter \ref{claf0}).            \\
+\hline
+\texttt{Om}    & Large integer mathematical function (Chapter \ref{claf1}).                  \\
+\hline
+\texttt{Da}    & Large fixed-point utility/arithmetic function (Chapter \ref{cfpa2}).        \\
+\hline
+\texttt{Dm}    & Large fixed-point mathematical function (Chapter \ref{cfpa3}).              \\
+\hline
+\texttt{Ga}    & Large floating-point utility/arithmetic function (Chapter \ref{claf2}).     \\
+\hline
+\texttt{Gm}    & Large floating-point mathematical function (Chapter \ref{claf3}).           \\
+\hline
+\texttt{Lf}    & Linear filter and control system functions (Chapter \ref{clfi0}).           \\
+\hline
+\texttt{Nf}    & Non-linear filter functions (Chapter \ref{cnfi0}).                          \\
+\hline
+\texttt{Pr}    & Pseudo-random number generation functions (Chapter \ref{crng1}).            \\
+\hline
+\texttt{Nh}    & Non-cryptographic hash functions (Chapter \ref{ccrc0}).                     \\
+\hline
+\texttt{Ch}    & Cryptographic hash functions (Chapter \ref{ccrh0}).                         \\
+\hline
+\texttt{Sc}    & Symmetric cipher functions (Chapter \ref{ccip0}).                           \\
+\hline
+\texttt{Ac}    & Asymmetric cipher functions (Chapter \ref{ccip1}).                          \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+

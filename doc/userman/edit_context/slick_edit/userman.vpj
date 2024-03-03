@@ -1,0 +1,142 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+    Version="10.0"
+    VendorName="SlickEdit"
+    TemplateName="(Other)"
+    WorkingDir=".">
+    <Config
+        Name="Release"
+        OutputFile=""
+        CompilerConfigName="">
+        <Menu>
+            <Target
+                Name="Compile"
+                MenuCaption="&amp;Compile"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveCurrent"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Build"
+                MenuCaption="&amp;Build"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Rebuild"
+                MenuCaption="&amp;Rebuild"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Debug"
+                MenuCaption="&amp;Debug"
+                SaveOption="SaveNone"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Execute"
+                MenuCaption="E&amp;xecute"
+                SaveOption="SaveNone"
+                RunFromDir="%rw">
+                <Exec CmdLine='".exe"'/>
+            </Target>
+        </Menu>
+    </Config>
+    <Files>
+        <Folder
+            Name="Build Files"
+            Filters="">
+            <F N="../../recomp.bat"/>
+            <F N="../../recomp_minimal.bat"/>
+        </Folder>
+        <Folder
+            Name="GitIgnoreFiles"
+            Filters="">
+            <F N=".gitignore"/>
+            <F N="../../.gitignore"/>
+        </Folder>
+        <Folder
+            Name="Main LaTeX File"
+            Filters="">
+            <F N="../../ucu_userman.tex"/>
+        </Folder>
+        <Folder
+            Name="Chapter LaTeX Files"
+            Filters="">
+            <F N="../../c_aal0/c_aal0.tex"/>
+            <F N="../../c_aal1/c_aal1.tex"/>
+            <F N="../../c_aal2/c_aal2.tex"/>
+            <F N="../../c_afn0/c_afn0.tex"/>
+            <F N="../../c_afn1/c_afn1.tex"/>
+            <F N="../../c_akc0/c_akc0.tex"/>
+            <F N="../../c_ami0/c_ami0.tex"/>
+            <F N="../../c_baf0/c_baf0.tex"/>
+            <F N="../../c_bal0/c_bal0.tex"/>
+            <F N="../../c_bmf0/c_bmf0.tex"/>
+            <F N="../../c_bpc0/c_bpc0.tex"/>
+            <F N="../../c_bsf0/c_bsf0.tex"/>
+            <F N="../../c_chs0/c_chs0.tex"/>
+            <F N="../../c_cip0/c_cip0.tex"/>
+            <F N="../../c_cip1/c_cip1.tex"/>
+            <F N="../../c_crc0/c_crc0.tex"/>
+            <F N="../../c_crh0/c_crh0.tex"/>
+            <F N="../../c_cth0/c_cth0.tex"/>
+            <F N="../../c_fpa0/c_fpa0.tex"/>
+            <F N="../../c_fpa1/c_fpa1.tex"/>
+            <F N="../../c_fpa2/c_fpa2.tex"/>
+            <F N="../../c_fpa3/c_fpa3.tex"/>
+            <F N="../../c_gct0/c_gct0.tex"/>
+            <F N="../../c_glo0/c_glo0.tex"/>
+            <F N="../../c_glo1/c_glo1.tex"/>
+            <F N="../../c_iov0/c_iov0.tex"/>
+            <F N="../../c_laf0/c_laf0.tex"/>
+            <F N="../../c_laf1/c_laf1.tex"/>
+            <F N="../../c_laf2/c_laf2.tex"/>
+            <F N="../../c_laf3/c_laf3.tex"/>
+            <F N="../../c_ldd0/c_ldd0.tex"/>
+            <F N="../../c_lfc0/c_lfc0.tex"/>
+            <F N="../../c_lfi0/c_lfi0.tex"/>
+            <F N="../../c_mal0/c_mal0.tex"/>
+            <F N="../../c_mal2/c_mal2.tex"/>
+            <F N="../../c_mat0/c_mat0.tex"/>
+            <F N="../../c_nch0/c_nch0.tex"/>
+            <F N="../../c_nef0/c_nef0.tex"/>
+            <F N="../../c_nfi0/c_nfi0.tex"/>
+            <F N="../../c_nlf0/c_nlf0.tex"/>
+            <F N="../../c_nna0/c_nna0.tex"/>
+            <F N="../../c_nth0/c_nth0.tex"/>
+            <F N="../../c_pta0/c_pta0.tex"/>
+            <F N="../../c_raa0/c_raa0.tex"/>
+            <F N="../../c_rla1/c_rla1.tex"/>
+            <F N="../../c_rma0/c_rma0.tex"/>
+            <F N="../../c_rng0/c_rng0.tex"/>
+            <F N="../../c_rng1/c_rng1.tex"/>
+            <F N="../../c_sea0/c_sea0.tex"/>
+            <F N="../../c_skc0/c_skc0.tex"/>
+            <F N="../../c_sol0/c_sol0.tex"/>
+            <F N="../../c_uuc0/c_uuc0.tex"/>
+            <F N="../../c_vco0/c_vco0.tex"/>
+        </Folder>
+        <Folder
+            Name="Ancillary Files"
+            Filters="">
+            <F N="../../comps/workbibl.tex"/>
+            <F N="../../comps/workhxcp.tex"/>
+            <F N="../../comps/workmdef.tex"/>
+            <F N="../../comps/worknenv.tex"/>
+            <F N="../../comps/workttla.tex"/>
+        </Folder>
+        <Folder
+            Name="Log Files"
+            Filters="">
+            <F N="../../ucu_userman.log"/>
+        </Folder>
+    </Files>
+</Project>
