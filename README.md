@@ -160,17 +160,13 @@ coherency, but thread safety should be automatic.
 ### Organization of Source Code Tree
 
 Differentiators, in order:
-- First directory level (x64_msvs_11_0_13_4).
-  - Processor family (x64, etc.).
-  - Compiler toolchain (msvs, etc.).
-  - Version of the compiler toolchain.
-- Second directory level.
-  - Operating system.
-- Third directory level (c_def, cpp_i64).
-  - Language (C, C++).
-  - Compiler options (default options, larger-than-normal integers, whatever).
-- Fourth directory level (TBD).
-  - Library generation paradigm (hand-rolled-looking source, library, all-in-one, etc.)
+- First directory level (x64_linux).
+  - Processor family (x64, etc.)
+  - Operating system (win, linux, msys_win64, etc.)
+- Second directory level, Compiler family, version, and language.
+  - gcc_17_c, g++_17_c++, msvs_17_c, etc.
+- Third directory level, Compiler options (default options, larger than normal integers, whatever).
+- Fourth directory level, Library generation paradigm (hand-rolled-looking source, library, all-in-one, etc.)
 
 #Preprocessor Switches
 
