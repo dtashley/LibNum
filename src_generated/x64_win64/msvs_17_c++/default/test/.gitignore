@@ -1,0 +1,4 @@
+*.user
+/.vs/**
+/LibNumTe.243e14bd/**
+/x64/**
