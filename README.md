@@ -1,44 +1,44 @@
 # LibNum
 
-A Microcontroller-centric Arithmetic, Cryptography, and Utility Library
+A Microcontroller-Centric Arithmetic, Cryptography, and Utility Library
 
 ## Current Status
 
-This project is just getting started, so nothing is usable yet.  At this time,
-there are just a few modules designed to be used in Microsoft
-Visual Studio.  Also, my thoughts are spread between GitHub Markdown
-documents and the user manual (a LaTeX document with source code in this
-repository).
+This project is just getting started, so nothing is usable yet.  At this 
+time, there are just a few modules designed to be used in Microsoft Visual 
+Studio.  Also, my thoughts are spread between GitHub Markdown documents 
+and the user manual (a LaTeX document with source code in this 
+repository).  
 
 ## Brief Description
 
 ### Overview
 
-_LibNum_ is a traditional thread-safe arithmetic and utility library,
-designed to be compatible with embedded software as well as
-server and PC software.  The library is
-composed of one function or data structure per object module, so that
-a linker can minimize the program memory footprint by extracting
-only the minimum set of functions and data structures necessary to link.  
-However, the source code for the library is generated from templates, so
-the library is provided for each platform in several other forms, including a
-collection of source files that are organized in an ordinary way
-(many functions per source file), so that the source files can simply
-be incorporated in source form into a project.
+_LibNum_ will be a traditional thread-safe arithmetic and utility library, 
+designed to be compatible with embedded software as well as server and PC 
+software.  The library is composed of one function or data structure per 
+object module, so that a linker can minimize the program memory footprint 
+by extracting only the minimum set of functions and data structures 
+necessary to link.  However, the source code for the library will be 
+generated from templates, so the library will be provided for each 
+platform in several other forms, including a collection of source files 
+that are organized in an ordinary way (many functions per source file), so 
+that the source files can simply be incorporated in source form into a 
+project.  
 
 ### Areas of Functionality
 - Utility and miscellaneous operations (such as determining the
 version number of the library or the size of certain data types).
-- Integer arithmetic and utility functions that operate on basic
+- Integer arithmetic and utility functions that operate on fundamental
 (built into the compiler) character and integer types.
 - Integer arithmetic and utility functions that operate on large
-(sizes not necessarily supported by the compiler) integers.
-- Fixed-point utility and arithmetic functions that operate on basic
+(not fundamental) integers.
+- Fixed-point utility and arithmetic functions that operate on fundamental
 (built into the compiler) character and integer types.
 - Fixed-point mathematical functions that operate on large
-(sizes not necessarily supported by the compiler) character and integer types.
+(not fundamental) character and integer types.
 - Floating-point arithmetic and utility functions that operate on
-basic (built into the compiler) data types.
+fundamental data types.
 - Linear filter and control system component functions.
 - Non-linear filter and control system component functions.
 - Block memory operations (setting, copying, shifting, etc.).
@@ -109,7 +109,7 @@ The software may be used without restriction or obligation in embedded products.
 
 ### Memory Management Paradigm
 
-- Trivial input and output parameters (native data types, for example) are passed
+- Trivial input and output parameters (fundamental data types, for example) are passed
 by value, and consume little space on the stack.  (This is consistent with
 re-entrancy.)
 - Trivial variables (such as for iteration) and trivial amounts of temporary storage are
