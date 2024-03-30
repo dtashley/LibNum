@@ -24,5 +24,8 @@
     <ClCompile Include="..\source\LnGen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\LnZar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

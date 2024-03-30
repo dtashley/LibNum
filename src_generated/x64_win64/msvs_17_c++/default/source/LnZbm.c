@@ -50,7 +50,7 @@
  *                               designed to operate without exceptions for all possible value
  *                               of <i>in_limb</i>.
  */
-tLnU8 LnZbmBcardOHbaILbd(tLnLimb32 in_limb)
+tLnU8 LnZbmBcardOHbaILbd(const tLnLimb32 in_limb)
 {
    return __popcnt(in_limb);
 }
@@ -68,7 +68,7 @@ tLnU8 LnZbmBcardOHbaILbd(tLnLimb32 in_limb)
  *                               designed to operate without exceptions for all possible value
  *                               of <i>in_limb</i>.
  */
-tLnSizet LnZbmBcardOZbaILbd(tLnLimb32 in_limb)
+tLnSizet LnZbmBcardOZbaILbd(const tLnLimb32 in_limb)
 {
    return __popcnt(in_limb);
 }
@@ -85,7 +85,7 @@ tLnSizet LnZbmBcardOZbaILbd(tLnLimb32 in_limb)
  *                               designed to operate without exceptions for all possible value
  *                               of <i>in_limb</i>.
  */
-tLnU8 LnZbmBcardOHbaIHbd(tLnU8 in_byte)
+tLnU8 LnZbmBcardOHbaIHbd(const tLnU8 in_byte)
 {
    return __popcnt(in_byte);  /* I doubt there would be any advantage to using __popcnt16() here, */
                               /* as the underlying popcnt instruction is likely to be very fast   */
@@ -107,7 +107,7 @@ tLnU8 LnZbmBcardOHbaIHbd(tLnU8 in_byte)
  *                               designed to operate without exceptions for all possible value
  *                               of <i>in_limb</i>.
  */
-tLnSizet LnZbmBcardOZbaIHbd(tLnU8 in_byte)
+tLnSizet LnZbmBcardOZbaIHbd(const tLnU8 in_byte)
 {
    return __popcnt(in_byte);  /* I doubt there would be any advantage to using __popcnt16() here, */
                               /* as the underlying popcnt instruction is likely to be very fast   */

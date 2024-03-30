@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LnGen.c" />
+    <ClCompile Include="..\source\LnZar.c" />
     <ClCompile Include="..\source\LnZbm.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

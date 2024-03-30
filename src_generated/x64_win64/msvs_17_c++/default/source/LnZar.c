@@ -1,9 +1,5 @@
 //--------------------------------------------------------------------------------------------------
-//Header file for LibNum.  This file must be #include'd in any source file that uses the
-//library.
-//
-//All functions in the library use the C calling convention (to avoid name mangling).  This
-//#include file and the library should be usable from both C and C++.
+//LibNum integer arithmetic functions.
 //--------------------------------------------------------------------------------------------------
 //This file is part of LibNum, https://github.com/dtashley/LibNum, and is provided
 //under The Unlicense, reproduced below.
@@ -33,40 +29,59 @@
 //
 //For more information, please refer to <https://unlicense.org>
 //--------------------------------------------------------------------------------------------------
-#ifndef LN_LIBNUM_H_INCLUDED
-#define LN_LIBNUM_H_INCLUDED
+#define MODULE_LNZBM
 
-#include <stdint.h>
+#include "LibNum.h"
 
-#ifdef __cplusplus
-   extern "C" {
-#endif
 
-typedef size_t tLnSizet;
-   //Adopt the appropriate size_t from the target system.
-typedef uint8_t  tLnU8;
-typedef uint32_t tLnU32;
-   //Fixed sizes.
-typedef uint32_t tLnLimb32;
-   //The size of a limb;
-
-/* LnGen.c */
-extern void LnVersionOUb32fOUb32fOUb32f(tLnLimb32* const out_major_version, tLnLimb32* const out_minor_version, tLnLimb32* const out_patch_version);
-extern tLnU8 LnGenCheckOBb8(void);
-
-/* LnZar.c */
-extern tLnU8    LnZarIncOB8aIOUh32e(tLnU8* const in_U8arr4);
-
-/* LnZbm.c */
-extern tLnU8    LnZbmBcardOHbaILbd(const tLnLimb32 in_limb);
-extern tLnSizet LnZbmBcardOZbaILbd(const tLnLimb32 in_limb);
-extern tLnU8    LnZbmBcardOHbaIHbd(const tLnU8     in_byte);
-extern tLnSizet LnZbmBcardOZbaIHbd(const tLnU8     in_byte);
-
-#ifdef __cplusplus
+/*!
+ * Increments a 32-bit integer (either unsigned or signed), represented as 4 bytes, MSB
+ * to LSB.  Rollover to 0 is supported.
+ *
+ * \param[in]  in_U8arr4         Pointer to the first byte of the array of 4 bytes containing
+ *                               the integer to be incremented.  This pointer may not be null
+ *                               or otherwise invalid.
+ * \returns                      != 0 if a rollover to 0 occurred, or 0 otherwise.
+ * \reentrancyandthreadsafety    This function is re-entrant and thread safe.
+ * \errorsandexceptions          This function cannot generate exceptions.  The function is
+ *                               designed to operate without exceptions for all possible values
+ *                               of data.
+ */
+tLnU8 LnZarIncOB8aIOUh32e(tLnU8 * const in_U8arr4)
+{
+   in_U8arr4[3]++;
+   if (!in_U8arr4[3])
+   {
+      in_U8arr4[2]++;
+      if (!in_U8arr4[2])
+      {
+         in_U8arr4[1]++;
+         if (!in_U8arr4[1])
+         {
+            in_U8arr4[0]++;
+            if (!in_U8arr4[0])
+            {
+               return 1;
+            }
+            else
+            {
+               return 0;
+            }
+         }
+         else
+         {
+            return 0;
+         }
+      }
+      else
+      {
+         return 0;
+      }
    }
-#endif
+   else
+   {
+      return 0;
+   }
+}
 
-#endif
-
-//End of LibNum.h.
+//End of LnZar.c.
