@@ -748,8 +748,8 @@ following conditions are met:
 \end{itemize}
 
 A typical function using a simple interface style might be 
-something like \texttt{unsigned UcuUiSqrt(unsigned arg)} or 
-\texttt{unsigned UcuUiMax2(unsigned arg1, unsigned arg2)}.  
+something like \texttt{unsigned NlUiSqrt(unsigned arg)} or 
+\texttt{unsigned NlUiMax2(unsigned arg1, unsigned arg2)}.  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -928,9 +928,9 @@ An example combining the ideas for the extended interface
 style may be helpful.  
 
 \begin{verbatim}
-#include "uculib.h" //Function and data structure definitions for //clients of the library.
+#include "NumLib.h" //Function and data structure definitions for //clients of the library.
 
-//Assume that the UCU Library contains a large unsigned integer
+//Assume that the NumLib Library contains a large unsigned integer
 //multiplication function that requires two "scratchpad" areas
 //of memory to operate (very contrived).
 
@@ -938,10 +938,10 @@ style may be helpful.
 //out largest size.
 union
 {
-   UCU_MUL_SCRATCH_TYPE_A mul_scratch_a;
+   NL_SCRATCH_TYPE_A mul_scratch_a;
       //Must be provided by the caller.  Doesn't matter where from.
       //Here it is global memory.
-   UCU_DIV_SCRATCH_TYPE_A div_scratch_a;
+   NL_DIV_SCRATCH_TYPE_A div_scratch_a;
       //Assume we call a division function somewhere in main() as
       //well.  Since the multiplication and division function can't
       //be active at the same time, the "scratch" areas can be
@@ -950,19 +950,19 @@ union
 
 int main(void)
 {
-   UCU_MUL_RESULT mul_result;
-   UCU_MUL_SCRATCH_TYPE_B mul_scratch_b;
+   NL_MUL_RESULT mul_result;
+   NL_MUL_SCRATCH_TYPE_B mul_scratch_b;
       //Second scratch area is on stack.  This might be done
       //sometimes.
 
-   UCU_UI1024 ui1024;
-   UCU_UI2048 ui2048;
+   NL_UI1024 ui1024;
+   NL_UI2048 ui2048;
 
    //Somehow, we initialize ui1024 here.
 
    //Actually call the multiplication function.  The
    //parameter types come in the order listed above.
-   UcuU2048U1024U1024UMul
+   NlU2048U1024U1024UMul
    (
       &mul_result,   //Success/fail and exception codes
                      //filled in by function.
@@ -1018,12 +1018,12 @@ form \emph{j.m-} (example: \emph{2.5c}) where:
 
 \index{naming conventions (library)}%
 A typical binary library file name is 
-``\emph{libucu\_2\_5c\_1.sm8}''.
+``\emph{libnumlib\_2\_5c\_1.sm8}''.
 In order, the binary library file name contains the
 following components:
 
 \begin{itemize}
-\item The characters \emph{libucu\_} (a constant string
+\item The characters \emph{libnumlib\_} (a constant string
       to identify the library).
 \item The version number of the library followed by an
       underscore
@@ -1045,11 +1045,11 @@ following components:
 \label{cldd0:sfnc0}
 
 A typical function name within the general library is 
-`\emph{UcuLfU16FiltAFiltRxx}'.  Function names within the 
+`\emph{NlLfU16FiltAFiltRxx}'.  Function names within the 
 general library usually consist of the following components, 
 with some components optional.  
 
-The first component is the string ``\emph{Ucu}''\@.  This 
+The first component is the string ``\emph{Nl}''\@.  This 
 string serves two purposes.  First, it identifies a function 
 as a member of the \emph{\productbasenameshort{}}.  Second, 
 it helps to prevent global name collisions.  
@@ -1113,7 +1113,7 @@ If a function operates on a characteristic data type in a
 way where there would never be a naming collision if some 
 parameters were not incorporated into the naming convention, 
 only this characteristic data type needs to be used.  For 
-example, ``UcuU32FiltLpFo'' might be an acceptable name for 
+example, ``NlU32FiltLpFo'' might be an acceptable name for 
 a first-order low-pass filter that accepts a 32-bit unsigned 
 integer as input and provides a 32-bit unsigned integer as 
 output.  This name is potentially acceptable because one 
