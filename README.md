@@ -206,45 +206,25 @@ contains all the implemented functions.
 be generated from the same template for a given module.  This means another
 parameter to the generation.  May require some planning.
 - Functions would deal with fixed-size operands.  The mapping from built-in data types (int, etc.)
-to the fixed size would occur via wrapper functions.
-- The mapping from "limb" size to fixed-sized operands will also be done by macros.  "Limb" is a kind
-of type binding, just like unsigned or int.
+to the fixed size will occur via wrapper functions.
+- Limb size on every platform will be 32 bits.  Reasons:
+  - Cryptographic functions are typically specified in 32-bit words.
+  - 32-bit words are commonly available.
+  - If the processor supports larger operands, functions can usually be written so that
+the higher-end processors fetch multiple 32-bit words at a time or otherwise
+pretend they are operating on an array of 32-bit words.
+   - Less capable processors can also have code written to act as if they operate
+on 32-bit words.
 - All of the available functions would be declared in one .h file.
-- There would be the notion of a limb size.  Generally, the machine will have addition and subtraction
-instructions to work with the limb size directly, a 2 = 1 x 1 multiplication instruction, and a 2 / 1 = 1
-division instruction.  For simplicity, on a certain platform, there will be only one limb size.  However,
-in the event the machine has a very unusual architecture where the same limb size isn't convenient
-across all operations, some of the functions will have to operate
-*as if* they work with limbs of that size.  But as far as the user of the library is concerned,
-there will be only one limb size.
 - In large integers, limbs will be stored in the way most convenient for the machine.
 Which leads to the topic of representation.
-- In terms of representation of large unsigned integers, possible representations are:
-  - Limbs, MSL to LSL.
-  - Limbs, LSL to MSL.
-  - Bytes, MSB to LSB.
-  - Bytes, LSB to MSB.
-- In terms of representation of signed integers, possible representations are:
-  - Sign and number of limbs held in a signed integer, and limbs arranged LSL to MSL, as an unsigned integer.
-  - Sign and number of limbs held in a signed integer, and limbs arranged MSL to LSL, as an unsigned integer.
-  - Sign-magnitude, and limbs arranged MSL to LSL.
-  - Sign-magnitude, and bytes arranged MSB to LSB.
-  - Two's complement, and limbs arranged MSL to LSL.
-  - Two's complement, and bytes arranged MSB to LSB.
-- For fixed sizes, the library supports these formats for unsigned integers:
-  - Limbs, MSB to LSB.
-  - Bytes, MSB to LSB.
-- For fixed sizes, the library supports these formats for signed integers:
-  - Two's complement, and limbs arranged MSL to LSL.
-  - Two's complement, and bytes arranged MSB to LSB.
-- For variable sizes, the library supports these formats for unsigned integers:
-  - Limbs, LSL to MSL.
-  - Limbs, MSL to LSL.
-  - Bytes, MSB to LSB.
-- For variable sizes, the library supports these formats for signed integers:
-  - Sign and number of limbs held in a signed integer, and limbs arranged LSL to MSL, as an unsigned integer.
-  - Two's complement, and limbs, MSL to LSL.
-  - Two's complement, and bytes MSB to LSB.
+- The only representations supported for large integers will be:
+  - Array of limbs, MSL to LSL (convenient for microcontroller work with fixed-size operands, easy for humans to understand).
+  - Array of limbs, LSL to MSL (convenient for arbitrary-sized integers, so that the integers can grow without relocation).
+  - Array of bytes, MSB to LSB (convenient for smaller microcontrollers with fixed-size operands, human-friendly).
+- Because processors vary in how words are stored, there can't be any assumptions made about how the limbs map to shorter integers or characters.  Explicit conversion functions are provided, but without those, limbs can be accessed only as limbs.
+- Limb-based functions operate only in integers that are a multiple of 32 bits in size.  Byte-based functions are provided only in multiples of 16 bits.
+- No representations for negative integers other than 2's complement are supported.  However, the functions in this library can be wrapped to support other implmentations.  The unsigned functionality can be used with a sign maintained by the wrapper.  The GMP, for example, maintains all integers as unsigned with the sign contained in the length variable.
 - Although primitive arithemtic functions will support all of the formats, certain higher-level
 functions may work with only some of the formats.
 - Operand sizes and formats:
@@ -253,15 +233,15 @@ functions may work with only some of the formats.
     - "O" for output.
     - "IO" for input/output.
   - Fundamental types:
-    - "Ub" for unsigned integer as built-in type.
+    - "Ub" for unsigned integer as fundamental type.
     - "Uc" for unsigned integer as array of limbs, MSL to LSL.
     - "Ud" for unsigned integer as array of limbs, LSL to MSL.
     - "Uh" for unsigned integer as unsigned bytes, MSB to LSB.
-    - "Sb" for signed integer as built-in type, 2's complement.
+    - "Sb" for signed integer as fundamental type, 2's complement.
     - "Sc" for signed integer as array of limbs, MSL to LSL, 2's complement.
     - "Sd" for signed integer as array of limbs, LSL to MSL, 2's complement.
     - "Sh" for signed integer as unsigned bytes, MSB to LSB, 2's complement.
-    - "Ib" for either type of integer (U or S) as built-in type.
+    - "Ib" for either type of integer (U or S) as fundamental type.
     - "Ic" for either type of integer (U or S) as array of limbs, MSL to LSL.
     - "Id" for either type of integer (U or S) as array of limbs, LSL to MSL.
     - "Ih" for either type of integer (U or S) as unsigned bytes, MSB to LSB.
@@ -273,8 +253,8 @@ functions may work with only some of the formats.
     - "Za" for array of size_t.
     - "Xb" for a bit pattern not numerical in nature.
     - "Xa" for an array of a bit pattern not numerical in nature.
-    - "Bb" for Boolean.
-    - "Ba" for an array of Boolen.
+    - "Bb" for Boolean, typically 8 bits.
+    - "Ba" for an array of Boolean, typically each 8 bits.
     - "Eb" for other enumerated type, a built-in representation.
     - "Ea" for an array of enumerated type.
     - "Fb" for float.
@@ -289,11 +269,11 @@ functions may work with only some of the formats.
   - Size of the data type in bits, or "n" for arbitrary.
   - Representation code:
     - "a" for returned by value via the function name.
-    - "b" for returned by reference via the function name, return value may not be null.
-    - "c" for returned by reference via the function name, return value may be null, and caller must test before using pointer.
+    - "b" for returned by reference via the function name, pointer supplied by caller may not be null.
+    - "c" for returned by reference via the function name, pointer supplied by caller may be null, and library function must test before using pointer.
     - "d" for passed by value through the parameter list.
-    - "e" for passed by reference through the parameter list, value may not be null.
-    - "f" for passed by reference through the parameter list, value may be null, and called function must test before using pointer.
+    - "e" for passed by reference through the parameter list, pointer supplied by caller may not be null.
+    - "f" for passed by reference through the parameter list, pointer supplied by caller may be null, and library function must test before using pointer.
 - Function naming:  function names will have the following components, in order.
   - *Ln*, for *L*ib*N*um.
   - Function family.
