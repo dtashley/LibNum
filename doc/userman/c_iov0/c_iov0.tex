@@ -117,310 +117,15 @@ Please feel free to correspond with me at \texttt{dashley@\-gmail.com}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Nomenclature}
-\label{ciov0:snom0}
-
-This section defines key terms near the start of the 
-document so that the remainder of the document is easier 
-reading.  
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Processor Nomenclature}
-\label{ciov0:snom0:sptr0}
-
-A \index{processor family}\emph{processor family} is a 
-family of processors, which may not all have the same 
-features or be compatible at the machine instruction 
-level.\footnote{For example, the \emph{PowerPC} or 
-\emph{Power Architecture} family of processors includes 
-variants that support the traditional 32-bit instruction 
-set, variants that support the Book VLE instruction set, and 
-variants that support both.} Examples of processor families 
-include ``8086'' or ``PPC''.  
-
-A \index{processor variant}\emph{processor variant} is a set 
-of processor models that can be treated identically by 
-\emph{\productbasenameshort{}} (the processors can use the 
-same machine code and same variant of the 
-\emph{\productbasenameshort{}} library).  Because 
-\emph{\productbasenameshort{}} uses only a subset of 
-processor functionality, processors that differ in some 
-details that don't affect \emph{\productbasenameshort{}} are 
-considered to be the same processor variant.  
-
-An \index{instruction set extension}\emph{instruction set 
-extension} is a set of instructions supported by a processor 
-model that isn't supported by all models within the 
-processor variant.  An example of an instruction set 
-extension is Intel's SHA extensions.  Instruction set 
-extensions are handled within \emph{\productbasenameshort{}} 
-by using preprocessor switches in the \emph{LibNum.h} file 
-to enable or disable the use of the extensions.  The default
-for all preprocessor switches is to assume that the 
-instruction set extension is not present in the processor 
-model.  The end user of the library may modify the default 
-values of the switches to enable the use of instruction set 
-extensions.
-
-A \index{multi-core processor}\emph{multi-core processor} is 
-a single integrated circuit that contains more than one 
-processor (or \emph{core}).  
-
-In desktop computing, the cores of a multi-core processor 
-are most typically identical in functionality and speed, so 
-that a desktop multi-core processor is typically an 
-\index{symmetric multiprocessor}\emph{SMP}, or 
-\index{symmetric multiprocessor}\emph{symmetric 
-multiprocessor}.  
-
-In microcontroller multi-core processors, it is common to 
-have cores that accept the same instruction set (and so can 
-run the same machine instructions from the same FLASH 
-memory), but which differ in speed or architectural 
-features.  Although strictly speaking such systems are 
-\emph{ASMP} (\index{asymmetric 
-multiprocessor}\emph{asymmetric multiprocessor}) systems, 
-all cores can usually run the same variant of
-\emph{\productbasenameshort{}}, but possibly at different 
-rates.  
-
-A processor may execute instructions out of order 
-(\index{out-of-order execution}\emph{out-of-order 
-execution}, or \index{out-of-order execution}\emph{OOE})\@.  
-It is necessary to differentiate between when a machine 
-instruction is fetched by the processor for non-speculatve 
-execution (\index{instruction fetch}\emph{instruction 
-fetch}), and when the instruction has been fully executed 
-(\index{instruction retirement}\emph{instruction 
-retirement}).  If a processor has more than one instruction 
-that is fetched but not retired, it may perform the memory 
-operations necessary to execute those 
-instructions in any order, so long as the processor 
-determines that the end result will be the same as if the 
-instructions had been executed one-at-a-time.  This is by 
-design not a problem for single-threaded programs, but may 
-cause problems for programs that interact with other 
-cores.\footnote{This won't normally cause problems for 
-multi-threaded programs on a \emph{single} core, because
-threads can only be switched as the result of an interrupt, 
-and the processor normally handles that case correctly 
-without any special actions by the programmer.} 
-
-A \index{memory barrier}\emph{memory barrier instruction} 
-(or \emph{memory barrier}) can be used to cause the 
-processor to order memory (or I/O) accesses in the same 
-order as instruction fetch.  Generally, a memory barrier 
-instruction guarantees that all memory accesses necessary to 
-execute instructions before the barrier will be completed 
-before any memory accesses necessary to execute instructions 
-after the barrier.  Processors typically provide several 
-memory barrier instructions, differing in which I/O 
-subsystems they affect and in the strength of the guarantees 
-provided.  
-
-Memory barrier instructions may be necessary in coordinating 
-between cores, to ensure that other cores sense memory 
-changes in a desired order.  Memory barrier instructions may 
-also be necessary in certain types of I/O.  
-
-To improve performance, cores may contain 
-\index{cache}\emph{cache}, which is core-local memory 
-mirroring the contents of RAM\footnote{FLASH may also be 
-cached, and a core may have a separate instruction and data 
-cache.  However, the cache coherency problems that apply to 
-a mathematical/cryptographic library occur only in the data 
-cache and only in the caching of RAM.} on read operations, 
-and buffering write operations.  Cache is divided into 
-\index{cache!line}\emph{cache lines}, which are the minimum 
-unit of data transfer between cache and RAM.  
-
-Since each core may have its own cache and each core 
-accesses RAM independently, there is the opportunity for a 
-core's cache contents to become inconsistent (or incoherent) 
-with the contents of the cache of other cores (in other 
-words, two cores may sense the same RAM location as having 
-different contents).  The issue of whether caches may have 
-inconsistent information about RAM contents is called 
-\index{cache!coherency}\emph{cache coherency}.  
-
-Multiprocessors deal with cache coherency in two ways:
-
-\begin{itemize}
-\item \emph{Hardware:} special hardware features exist to
-      automatically keep caches consistent, and no
-      special software actions are required.  
-\item \emph{Software:} the problem is not addressed in
-      hardware, so software must use special
-      steps\footnote{Usually, some combination of 
-      memory barrier instructions, cache invalidation
-      instructions, and cache flush instructions.} to
-      coordinate between cores using RAM.  
-\end{itemize}
-
-At almost any time, a core may receive an 
-\index{interrupt}\emph{interrupt}, which causes the core to 
-immediately begin executing a subroutine associated with the 
-source of the interrupt.  This subroutine is called an 
-\index{ISR (interrupt service routine)}\emph{interrupt 
-service routine}, or \emph{ISR}\@.  It is 
-sometimes\footnote{It is not \emph{always} possible.  
-Sophisticated processors have features to prevent 
-unprivileged code from disabling or enabling interrupts.} 
-possible to prevent interrupts from occurring during a 
-particular sequence of machine instructions.  
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Software and Development Tool Nomenclature}
-\label{ciov0:snom0:sdvt0}
-
-\index{client software}\emph{Client software} is the 
-software which calls the functions in 
-\emph{\productbasenameshort{}}.  
-
-Each \emph{C}/\emph{C++} compiler has \index{basic data 
-type}\emph{basic data types} (those built into the 
-language).  From \emph{C}/\emph{C++}, examples of basic data 
-types include \emph{char}, \emph{int}, and \emph{float}.  
-Often, compiler options are available to change the sizes of 
-some basic data types (allowing an \emph{int} to be either 
-16 or 32 bits is common, for example).  Those compiler 
-options affect the compatibility of a numeric library in 
-binary form, because library functions make data size 
-assumptions.  A numeric library in binary form can't be used 
-with client software unless the sizes of basic data types 
-are known.  Hence, compiler options may affect the 
-definition of \emph{library variant} (described below).  
-Certain other compiler options (those that affect the use of 
-floating-point hardware, for example) may also limit binary 
-library compatibility.  
-
-\emph{C}/\emph{C++} compilers operate under rules about how 
-one function calls another function (the organization of the 
-stack and stack frames, how parameters are passed, which 
-processor registers a function is free to modify and which 
-must be saved and restored, etc.).  These rules are 
-typically specified in a document called an 
-\index{application binary interface}\emph{application binary 
-interface specification} or \emph{ABI spec.} or 
-\emph{ABI}\@.  The ABI naturally affects compatibility of a 
-binary library; but also may affect the library source code 
-due to the presence of assembly-language.  
-
-A \index{library variant}\emph{library variant} is a binary 
-version of \emph{\productbasenameshort{}} to support a 
-specific combination of processor variant, compiler, 
-compiler options, and ABI\@.  A single processor variant may 
-have multiple library variants (due to compiler, compiler 
-options, and the ABI).  
-
-A \emph{C}/\emph{C++} compiler may reorder the machine 
-instructions corresponding to \emph{C}/\emph{C++}-language 
-statements so that the machine instructions appear in a 
-different order than the corresponding \emph{C}/\emph{C++} 
-statements.  Although this is not a problem for 
-single-threaded programs, it may introduce issues for 
-multi-threaded programs or for coordination between cores.  
-To prevent reordering of machine instructions, a 
-\index{compiler barrier}\emph{compiler barrier} may be used.  
-A compiler barrier is a special directive provided to the 
-compiler to ensure that all \emph{C}/\emph{C++} statements 
-before the barrier have their machine instructions occur 
-before any of the \emph{C}/\emph{C++} statements after the 
-barrier.\footnote{Note that even with use of compiler 
-barriers, out-of-order execution 
-(\S{}\ref{ciov0:snom0:sptr0}) may still create logical 
-problems in coordinating between cores.} 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Computer Arithmetic Nomenclature}
-\label{ciov0:snom0:scan0}
-
-The set of integers is denoted 
-\index{Z@$\vworkintset$}$\vworkintset{}$\@.  The set of 
-non-negative integers is denoted 
-\index{Z+@$\vworkintsetnonneg$}$\vworkintsetnonneg{}$, and 
-the set of positive integers is denoted 
-\index{N@$\vworkintsetpos$}$\vworkintsetpos{}$.  
-
-\begin{eqnarray}
-\label{eq:ciov0:snom0:scan0:01}
-\vworkintset{}   \;    & = & \{ \ldots , -2, -1, 0, 1, 2, \ldots \} \\
-\label{eq:ciov0:snom0:scan0:02}
-\vworkintsetnonneg{} \!\!\!\!\; & = & \{ 0, 1, 2, \ldots \}         \\
-\label{eq:ciov0:snom0:scan0:03}
-\vworkintsetpos{}  \;  & = & \{ 1, 2, 3, \ldots \}
-\end{eqnarray}
-
-Similarly the set of real numbers is denoted 
-\index{R@$\vworkrealset$}$\vworkrealset$, and the set of 
-non-negative real numbers is denoted 
-\index{R+@$\vworkrealsetnonneg$}$\vworkrealsetnonneg$.  
-
-A \index{native integer}\emph{native integer} is an integer 
-that corresponds to a \emph{C}/\emph{C++} native data type.  
-These are usually, but not always, integers that the 
-processor can manipulate with single machine instructions.  
-
-A \index{large integer}\emph{large integer} is an integer 
-that is larger than a \emph{C}/\emph{C++} native data type.  
-(In \emph{\productbasenameshort{}}, large integers are 
-usually represented as arrays of native integers.  Each such 
-native integer is called a \index{limb}\emph{limb}\index{GMP 
-Library@\emph{GMP Library}}\footnote{This nomenclature comes 
-from \emph{The GMP Library} 
-\cite{bibref:w:gmplibhomepage}.}, and the size of each limb, 
-called the \index{limb size}\emph{limb size}, is chosen 
-based on what integer sizes the processor instruction set 
-accommodates.) 
-
-A \index{fixed-point number}\emph{fixed-point number} is an 
-integer where each count of the integer corresponds to 
-$1/k$, $k \in \vworkintsetpos$ in the represented value.  
-$k$ is typically chosen to be a power of 2 so that the radix 
-point of the fixed-point number appears between two bits.  
-
-A \emph{native fixed-point number} is a fixed-point number 
-implemented using a native integer.  A \emph{large 
-fixed-point number} is a fixed-point number implemented 
-using a large integer.  
-
-A \index{floating-point number}\emph{floating-point number} 
-is a number containing a sign, mantissa, and exponent.  
-Floating-point numbers are designed to be an approximate 
-representation of $\vworkrealset$.  They have a larger range 
-than fixed-point numbers, but precision that depends on the 
-value being represented.  
-
-A \emph{native floating-point number} is a floating-point 
-number implemented using a native floating-point data type.  
-A \emph{large floating-point number} is a floating-point 
-number that is larger (in terms of memory storage 
-requirements) than a native floating-point number.  
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Licensing and License Interpretation}
 \label{ciov0:slip0}
 
 The \emph{\productbasenameshort{}} library and all 
-documentation is licensed under \emph{The Unlicense}.  The 
-license below (\emph{The Unlicense}) is included in the 
+documentation is licensed under
+\index{Unlicense@\emph{The Unlicense}}\emph{The Unlicense}.  The 
+license text below (\emph{The Unlicense}) is included in the 
 \emph{LICENSE} file in the root directory of the project.  
 
-%Note:  The verbatim text below was formatted in SlickEdit
-%       by setting the margin to 72 and selecting each 
-%       paragraph then invoking "Format Selection".
 \begin{small}
 \begin{verbatim}
 This is free and unencumbered software released into the public domain.
@@ -456,6 +161,16 @@ the authors or curators of the software.  In particular, the software may
 be used in any product, including embedded products, without the obligation
 to notify the end user or to publish changes.
 
+All documentation and images, in any form (source, intermediate, final, .PDF,
+.DVI, etc.), including this document in any form, are also licensed under [the same
+terms as] \emph{The Unlicense}. (The documentation is closely tied to the software,
+and any errors in the software are likely to be mirrored in the documentation,
+and vice-versa.)  With respect to all documentation in any form, including this
+document in any form, per the
+terms of \emph{The Unlicense}, there is no warranty of any kind, no liability,
+no obligation to notify the end user, and
+no obligation to publish changes.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -463,228 +178,231 @@ to notify the end user or to publish changes.
 \section{Detailed Description of this Document}
 \label{ciov0:sotd0}
 
-\emph{\textbf{Part I: General Information}} provides introductory
-and general information about \emph{\productbasenameshort{}}.
+TBD.
 
-\begin{itemize}
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ciov0}: 
-      Introduction and Overview}} provides general information
-      about \emph{\productbasenameshort{}}.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cldd0}: 
-      Detailed Description of \productbasenameshort{}}}
-      provides a detailed description 
-      of the general features and characteristics
-      of \emph{\productbasenameshort{}}\@.  The specific
-      functions and constant data structures 
-      in \emph{\productbasenameshort{}} are described in
-      Chapters \ref{cuuc0} through \ref{ccip1}.
-\end{itemize}
 
-\emph{\textbf{Part II: Technical Background}} provides mathematical and 
-technical background information useful in understanding the library.  
-
-\begin{itemize}
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cgct0}: 
-      General Computing}} provides technical background on a variety of general 
-      computing topics.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbal0}: 
-      Boolean Algebra and Digital Logic}} provides technical background on 
-      Boolean algebra and its application to digital logic, simplifying software 
-      constructs, and vertical counters.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cpta0}: 
-      Polytopes, Automata, and Timed Automata}} provides technical background 
-      related to the design of state machines and stateful systems.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnth0}: 
-      Number Theory}} provides technical background on number theory.  (Number 
-      theory is the branch of mathematics that deals with positive integers and 
-      their properties, and is the basis of much of modern cryptography.) 
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crla1}: 
-      Farey Series Approximation}} provides technical background and algorithms 
-      surrounding approximating a real number with a rational number (for 
-      example, 355/113 is the best approximation to $\pi$ with numerator and 
-      denominator not exceeding 1,000).  In rare scenarios, using a rational 
-      approximation to a real number is the most efficient way to perform a 
-      calculation.  Efficiently finding the best rational approximation to a 
-      real number requires\footnote{For example, suppose it is necessary to find 
-      the best rational approximation to $\pi$ with numerator and denominator 
-      not exceeding $2^{256}-1$.  No $O(n)$ algorithm will suffice, as 
-      $2^{256}-1$ is too large.  The actual best approximation is 
-      110,\-859,\-348,\-167,\-216,\-110,\-469,\-450,\-% 
-      301,\-947,\-424,\-979,\-270,\-176,\-705,\-044,\-% 
-      426,\-927,\-758,\-107,\-559,\-970,\-506,\-471,\-% 
-      518,\-580 / 35,\-287,\-626,\-497,\-515,\-783,\-% 
-      106,\-785,\-958,\-721,\-190,\-659,\-891,\-744,\-% 
-      246,\-448,\-011,\-713,\-951,\-598,\-935,\-229,\-% 
-      278,\-291,\-942,\-269---a result that can only be obtained using the better 
-      algorithm presented in this chapter.} results from number theory, which 
-      are presented in this chapter.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccth0}: 
-      Coding Theory}} provides technical background on error detecting codes, 
-      error correcting codes, and other topics from coding theory.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnna0}: 
-      Non-Numerical Algorithms}} provides technical background on a variety 
-      non-numerical algorithms that appear in the library, such as algorithms 
-      for searching and sorting.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{caal0}: 
-      Integer Arithmetic Algorithms and Implementation}} provides technical 
-      background on integer arithmetic algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cmal0}: 
-      Integer Mathematical Algorithms and Implementation}} provides technical 
-      background on integer mathematical algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{caal2}: 
-      Fixed-Point Arithmetic Algorithms and Implementation}} provides technical 
-      background on fixed-point arithmetic algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cmal2}: 
-      Fixed-Point Mathematical Algorithms and Implementation}} provides 
-      technical background on fixed-point mathematical algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{craa0}: 
-      Real and Floating-Point Arithmetic Algorithms and Implementation}} 
-      provides technical background on real and floating-point arithmetic 
-      algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crma0}: 
-      Real and Floating-Point Mathematical Algorithms and Implementation}} 
-      provides technical background on real and floating-point mathematical 
-      algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{clfc0}: 
-      Linear Filters and Control System Elements}} provides technical background 
-      on linear filters and control system elements.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnlf0}: 
-      Non-Linear Filters and Debouncing}} provides technical background on 
-      non-linear filters and debouncing.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crng0}: 
-      Random and Pseudo-Random Number Generation}} provides technical background 
-      on the generation of random and pseudo-random numbers.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnch0}: 
-      Non-Cryptographic Hashes}} provides technical background on 
-      non-cryptographic hashes.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cchs0}: 
-      Cryptographic Hashes}} provides technical background on cryptographic 
-      hashes.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cskc0}: 
-      Symmetric-Key Ciphers and Algorithms}} provides technical background on 
-      symmetric key ciphers and related algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cakc0}: 
-      Asymmetric-Key Ciphers and Algorithms}} provides technical background on 
-      asymmetric key ciphers and related algorithms.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cmat0}: 
-      Miscellaneous Mathematical and Algorithmic Topics}} provides technical 
-      background on mathematical and algorithmic topics that could not easily be 
-      categorized elsewhere.  
-\end{itemize}
-
-\emph{\textbf{Part II: Library Documentation}} describes
-usage of the library and the actual library functions.
-
-\begin{itemize}
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cuuc0}: 
-      How to Use \productbasenameshort{}}} explains how to use 
-      \productbasenameshort{} in a project.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnef0}: 
-      Utility and Miscellaneous Functions}} documents functions that provide 
-      useful non-data-driven functionality.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbmf0}: 
-      Block Memory Functions}} documents functions that operate on blocks of 
-      memory (setting, copying, shifting, etc.).  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{csea0}: 
-      Search Functions}} documents functions that perform searches; such as 
-      linear searches and binary searches.
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{csol0}: 
-      Sort Functions}} documents functions that re-order arrays.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cami0}: 
-      Array Manipulation Functions}} documents functions that manipulate arrays.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbsf0}: 
-      Bit-Mapped Set Functions}} documents functions that operate on sets 
-      represented as arrays of bits.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cvco0}: 
-      Vertical Counter Functions}} documents functions that implement vertical 
-      counters.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cafn0}: 
-      Basic Data Type Integer Utility and Arithmetic Functions}} documents 
-      utility and arithmetic functions that operate on basic (built into the 
-      compiler) character and integer types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbaf0}: 
-      Basic Data Type Integer Mathematical Functions}} documents mathematical 
-      functions that operate on basic (built into the compiler) character and 
-      integer types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa0}: 
-      Basic Data Type Fixed-Point Utility and Arithmetic Functions}} documents 
-      utility and arithmetic functions that operate on fixed-point values stored 
-      in basic (built into the compiler) character and integer types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa1}: 
-      Basic Data Type Fixed-Point Mathematical Functions}} documents 
-      mathematical functions that operate on fixed-point values stored in basic 
-      (built into the compiler) character and integer types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{caal1}: 
-      Basic Data Type Floating-Point Utility and Arithmetic Functions}} 
-      documents utility and arithmetic functions that operate on basic (built 
-      into the compiler) floating-point types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cafn1}: 
-      Basic Data Type Floating-Point Mathematical Functions}} documents 
-      mathematical functions that operate on basic (built into the compiler) 
-      floating-point types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf0}: 
-      Large Integer Utility and Arithmetic Functions}} documents utility and 
-      arithmetic functions that involve large integers.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf1}: 
-      Large-Integer Mathematical Functions}} documents mathematical functions 
-      that involve large integers.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa2}: 
-      Large Fixed-Point Utility and Arithmetic Functions}} documents utility and 
-      arithmetic functions that operate on fixed-point values stored as large 
-      integers.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa3}: 
-      Large Fixed-Point Mathematical Functions}} documents mathematical 
-      functions that operate on fixed-point values stored as large integers.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf2}: 
-      Large Floating-Point Utility and Arithmetic Functions}} documents utility 
-      and arithmetic functions that perform arithmetic on floating-point types 
-      larger than basic floating-point data types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf3}: 
-      Large Floating-Point Mathematical Functions}} documents utility and 
-      arithmetic functions that perform arithmetic on floating-point types 
-      larger than basic floating-point data types.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{clfi0}: 
-      Linear Filter and Control System Component Functions}} documents functions 
-      that implement classic discrete-time linear filters.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnfi0}: 
-      Non-Linear Filter Functions}} documents functions that implement 
-      non-linear discrete-time filters.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crng1}: 
-      Pseudo-Random Number Generation Functions}} documents functions that generate
-      pseudo-random numbers by a variety of algorithms.
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccrc0}: 
-      Non-Cryptographic Hash Functions}} documents functions that calculate and 
-      manipulate CRCs, checksums, and non-cryptographic hashes.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccrh0}: 
-      Cryptographic Hash Functions}} documents functions that implement 
-      cryptographic hashes.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccip0}: 
-      Symmetric Cipher Functions}} documents symmetric cipher functions that 
-      encrypt and decrypt data.  
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccip1}: 
-      Asymmetric Cipher Functions}} documents asymmetric cipher functions that 
-      encrypt and decrypt data.  
-\end{itemize}
-
-\emph{\textbf{Part IV: Developer Information}} provides 
-information about building the library from source code and
-extending the library.
-
-\begin{itemize}
-\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbpc0}: 
-      Library Development and Modification Procedures}} 
-      documents how to generate the library source code from
-      the templates, how to modify the templates, how to
-      modify the generator, how to add new processor variants,
-      how to tune the library, how to build the library, and how
-      to test the library.  Design and coding standards are also
-      documented.
-\end{itemize}
-
-\emph{\textbf{Part V: Appendices, Bibliography, and Index}} 
-provides glossaries, references, and an index.  Individuals, 
-products, companies, websites, and Internet newsgroups are 
-cited in the same framework as traditional references in 
-order to provide the reader with more resources to obtain 
-information.  
+%\emph{\textbf{Part I: General Information}} provides introductory
+%and general information about \emph{\productbasenameshort{}}.
+%
+%\begin{itemize}
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ciov0}: 
+%      Introduction and Overview}} provides general information
+%      about \emph{\productbasenameshort{}}.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cldd0}: 
+%      Detailed Description of \productbasenameshort{}}}
+%      provides a detailed description 
+%      of the general features and characteristics
+%      of \emph{\productbasenameshort{}}\@.  The specific
+%      functions and constant data structures 
+%      in \emph{\productbasenameshort{}} are described in
+%      Chapters \ref{cuuc0} through \ref{ccip1}.
+%\end{itemize}
+%
+%\emph{\textbf{Part II: Technical Background}} provides mathematical and 
+%technical background information useful in understanding the library.  
+%
+%\begin{itemize}
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cgct0}: 
+%      General Computing}} provides technical background on a variety of general 
+%      computing topics.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbal0}: 
+%      Boolean Algebra and Digital Logic}} provides technical background on 
+%      Boolean algebra and its application to digital logic, simplifying software 
+%      constructs, and vertical counters.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cpta0}: 
+%      Polytopes, Automata, and Timed Automata}} provides technical background 
+%      related to the design of state machines and stateful systems.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnth0}: 
+%      Number Theory}} provides technical background on number theory.  (Number 
+%      theory is the branch of mathematics that deals with positive integers and 
+%      their properties, and is the basis of much of modern cryptography.) 
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crla1}: 
+%      Farey Series Approximation}} provides technical background and algorithms 
+%      surrounding approximating a real number with a rational number (for 
+%      example, 355/113 is the best approximation to $\pi$ with numerator and 
+%      denominator not exceeding 1,000).  In rare scenarios, using a rational 
+%      approximation to a real number is the most efficient way to perform a 
+%      calculation.  Efficiently finding the best rational approximation to a 
+%      real number requires\footnote{For example, suppose it is necessary to find 
+%      the best rational approximation to $\pi$ with numerator and denominator 
+%      not exceeding $2^{256}-1$.  No $O(n)$ algorithm will suffice, as 
+%      $2^{256}-1$ is too large.  The actual best approximation is 
+%      110,\-859,\-348,\-167,\-216,\-110,\-469,\-450,\-% 
+%      301,\-947,\-424,\-979,\-270,\-176,\-705,\-044,\-% 
+%      426,\-927,\-758,\-107,\-559,\-970,\-506,\-471,\-% 
+%      518,\-580 / 35,\-287,\-626,\-497,\-515,\-783,\-% 
+%      106,\-785,\-958,\-721,\-190,\-659,\-891,\-744,\-% 
+%      246,\-448,\-011,\-713,\-951,\-598,\-935,\-229,\-% 
+%      278,\-291,\-942,\-269---a result that can only be obtained using the better 
+%      algorithm presented in this chapter.} results from number theory, which 
+%      are presented in this chapter.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccth0}: 
+%      Coding Theory}} provides technical background on error detecting codes, 
+%      error correcting codes, and other topics from coding theory.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnna0}: 
+%      Non-Numerical Algorithms}} provides technical background on a variety 
+%      non-numerical algorithms that appear in the library, such as algorithms 
+%      for searching and sorting.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{caal0}: 
+%      Integer Arithmetic Algorithms and Implementation}} provides technical 
+%      background on integer arithmetic algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cmal0}: 
+%      Integer Mathematical Algorithms and Implementation}} provides technical 
+%      background on integer mathematical algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{caal2}: 
+%      Fixed-Point Arithmetic Algorithms and Implementation}} provides technical 
+%      background on fixed-point arithmetic algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cmal2}: 
+%      Fixed-Point Mathematical Algorithms and Implementation}} provides 
+%      technical background on fixed-point mathematical algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{craa0}: 
+%      Real and Floating-Point Arithmetic Algorithms and Implementation}} 
+%      provides technical background on real and floating-point arithmetic 
+%      algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crma0}: 
+%      Real and Floating-Point Mathematical Algorithms and Implementation}} 
+%      provides technical background on real and floating-point mathematical 
+%      algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{clfc0}: 
+%      Linear Filters and Control System Elements}} provides technical background 
+%      on linear filters and control system elements.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnlf0}: 
+%      Non-Linear Filters and Debouncing}} provides technical background on 
+%      non-linear filters and debouncing.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crng0}: 
+%      Random and Pseudo-Random Number Generation}} provides technical background 
+%      on the generation of random and pseudo-random numbers.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnch0}: 
+%      Non-Cryptographic Hashes}} provides technical background on 
+%      non-cryptographic hashes.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cchs0}: 
+%      Cryptographic Hashes}} provides technical background on cryptographic 
+%      hashes.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cskc0}: 
+%      Symmetric-Key Ciphers and Algorithms}} provides technical background on 
+%      symmetric key ciphers and related algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cakc0}: 
+%      Asymmetric-Key Ciphers and Algorithms}} provides technical background on 
+%      asymmetric key ciphers and related algorithms.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cmat0}: 
+%      Miscellaneous Mathematical and Algorithmic Topics}} provides technical 
+%      background on mathematical and algorithmic topics that could not easily be 
+%      categorized elsewhere.  
+%\end{itemize}
+%
+%\emph{\textbf{Part II: Library Documentation}} describes
+%usage of the library and the actual library functions.
+%
+%\begin{itemize}
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cuuc0}: 
+%      How to Use \productbasenameshort{}}} explains how to use 
+%      \productbasenameshort{} in a project.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnef0}: 
+%      Utility and Miscellaneous Functions}} documents functions that provide 
+%      useful non-data-driven functionality.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbmf0}: 
+%      Block Memory Functions}} documents functions that operate on blocks of 
+%      memory (setting, copying, shifting, etc.).  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{csea0}: 
+%      Search Functions}} documents functions that perform searches; such as 
+%      linear searches and binary searches.
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{csol0}: 
+%      Sort Functions}} documents functions that re-order arrays.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cami0}: 
+%      Array Manipulation Functions}} documents functions that manipulate arrays.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbsf0}: 
+%      Bit-Mapped Set Functions}} documents functions that operate on sets 
+%      represented as arrays of bits.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cvco0}: 
+%      Vertical Counter Functions}} documents functions that implement vertical 
+%      counters.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cafn0}: 
+%      Basic Data Type Integer Utility and Arithmetic Functions}} documents 
+%      utility and arithmetic functions that operate on basic (built into the 
+%      compiler) character and integer types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbaf0}: 
+%      Basic Data Type Integer Mathematical Functions}} documents mathematical 
+%      functions that operate on basic (built into the compiler) character and 
+%      integer types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa0}: 
+%      Basic Data Type Fixed-Point Utility and Arithmetic Functions}} documents 
+%      utility and arithmetic functions that operate on fixed-point values stored 
+%      in basic (built into the compiler) character and integer types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa1}: 
+%      Basic Data Type Fixed-Point Mathematical Functions}} documents 
+%      mathematical functions that operate on fixed-point values stored in basic 
+%      (built into the compiler) character and integer types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{caal1}: 
+%      Basic Data Type Floating-Point Utility and Arithmetic Functions}} 
+%      documents utility and arithmetic functions that operate on basic (built 
+%      into the compiler) floating-point types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cafn1}: 
+%      Basic Data Type Floating-Point Mathematical Functions}} documents 
+%      mathematical functions that operate on basic (built into the compiler) 
+%      floating-point types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf0}: 
+%      Large Integer Utility and Arithmetic Functions}} documents utility and 
+%      arithmetic functions that involve large integers.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf1}: 
+%      Large-Integer Mathematical Functions}} documents mathematical functions 
+%      that involve large integers.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa2}: 
+%      Large Fixed-Point Utility and Arithmetic Functions}} documents utility and 
+%      arithmetic functions that operate on fixed-point values stored as large 
+%      integers.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cfpa3}: 
+%      Large Fixed-Point Mathematical Functions}} documents mathematical 
+%      functions that operate on fixed-point values stored as large integers.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf2}: 
+%      Large Floating-Point Utility and Arithmetic Functions}} documents utility 
+%      and arithmetic functions that perform arithmetic on floating-point types 
+%      larger than basic floating-point data types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{claf3}: 
+%      Large Floating-Point Mathematical Functions}} documents utility and 
+%      arithmetic functions that perform arithmetic on floating-point types 
+%      larger than basic floating-point data types.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{clfi0}: 
+%      Linear Filter and Control System Component Functions}} documents functions 
+%      that implement classic discrete-time linear filters.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cnfi0}: 
+%      Non-Linear Filter Functions}} documents functions that implement 
+%      non-linear discrete-time filters.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{crng1}: 
+%      Pseudo-Random Number Generation Functions}} documents functions that generate
+%      pseudo-random numbers by a variety of algorithms.
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccrc0}: 
+%      Non-Cryptographic Hash Functions}} documents functions that calculate and 
+%      manipulate CRCs, checksums, and non-cryptographic hashes.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccrh0}: 
+%      Cryptographic Hash Functions}} documents functions that implement 
+%      cryptographic hashes.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccip0}: 
+%      Symmetric Cipher Functions}} documents symmetric cipher functions that 
+%      encrypt and decrypt data.  
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{ccip1}: 
+%      Asymmetric Cipher Functions}} documents asymmetric cipher functions that 
+%      encrypt and decrypt data.  
+%\end{itemize}
+%
+%\emph{\textbf{Part IV: Developer Information}} provides 
+%information about building the library from source code and
+%extending the library.
+%
+%\begin{itemize}
+%\item \emph{\textbf{Chapter\postchapterwordnonstretchable{}\ref{cbpc0}: 
+%      Library Development and Modification Procedures}} 
+%      documents how to generate the library source code from
+%      the templates, how to modify the templates, how to
+%      modify the generator, how to add new processor variants,
+%      how to tune the library, how to build the library, and how
+%      to test the library.  Design and coding standards are also
+%      documented.
+%\end{itemize}
+%
+%\emph{\textbf{Part V: Appendices, Bibliography, and Index}} 
+%provides glossaries, references, and an index.  Individuals, 
+%products, companies, websites, and Internet newsgroups are 
+%cited in the same framework as traditional references in 
+%order to provide the reader with more resources to obtain 
+%information.  
 
