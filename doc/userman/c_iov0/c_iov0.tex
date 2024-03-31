@@ -17,19 +17,28 @@ document, the \emph{\productbasenamelong{}, Version
 \emph{\productbasenameultrashort{}}) is a 
 \emph{C}/\emph{C++}-callable 
 arith\-me\-tic/\-math\-e\-mat\-i\-cal/\-cryp\-to\-graph\-ic 
-software library for microcontrollers and embedded systems.  
+software library designed for microcontrollers and embedded
+systems (however, it is also suitable for personal computers
+and servers).
 
 The library includes functionality for: 
 
 \begin{itemize}
 \item \emph{Arithmetic:}
-      native, large integer, fixed-point, large fixed-point,
+      fundamental\footnote{\emph{Fundamental integer} is used here
+      to mean an integer type
+      specified by the C standard and built into the compiler.} integer,
+      large\footnote{\emph{Large integer} is used here to mean an integer
+      larger than any fundamental integer type.  Such integers are implemented as
+      arrays of fundamental integers.} integer, fixed-point, large fixed-point,
       and float\-ing-point addition, subtraction,
       multiplication, and division.
+\item \emph{Standard functions:}
+      root extraction, logarithm and exponentiation, trigonometric, and similar
+      functions.
 \item \emph{Mathematical algorithms:}
-      native, large integer, fixed-point, large fixed-point,
-      floating-point, vector arithmetic, and algebraic 
-      and transcendental functions.
+      fundamental integer, large integer, fixed-point, large fixed-point,
+      floating-point, and vector algorithms.
 \item \emph{Control system elements and linear filtering:}
       low/high-pass filtering, scaling, differentiation,
       and integration.
@@ -42,75 +51,44 @@ The library includes functionality for:
       SHA-384, SHA-512, SHA-512/224, and SHA-512/256).
 \item \emph{Cryptography:}
       ciphers and PRNGs.
-\item \emph{Bit-mapped sets:}
-      union, intersection, cardinality, and iteration.
+\item \emph{Searching, Sorting, Insertion, and Deletion:}
+      searching for elements in unsorted and sorted tables and arrays,
+      sorting tables and arrays, inserting and deleting elements from
+      unsorted and sorted tables and arrays.
+\item \emph{Bit Manipulation:}
+      bit cardinality, searches for set and clear bits, bit manipulation.
 \item \emph{Utility:}
       block memory
       operations and array operations.
 \end{itemize}
 
-\emph{\productbasenameshort{}} is a traditional
-library in that:
+\emph{\productbasenameshort{}} has the following features that make it suitable
+for use in embedded systems:
 
 \begin{itemize}
-\item The source code is arranged as one function or data structure per source file.
-\item The source code is compiled as one function or data structure per object file.
-\item Object files are combined together into a library.
-\item The linker extracts only what it needs to resolve references.  (This generally
-      gives minimum FLASH and RAM footprint.)
-\end{itemize}
-
-\emph{\productbasenameshort{}} is similar in spirit to 
-existing libraries such as \emph{The GNU Multiple Precision 
-Arithmetic Library}\footnote{Hereinafter called \emph{The 
-GMP} or \emph{GMP}.}, but it has some differences that make 
-it more suitable for embedded software.  The features and 
-characteristics of the \emph{\productbasenameshort{}} are: 
-
-\begin{itemize}
-\item The library is optimized for speed (similar to \emph{The GMP}).
-      (Assembly-language for common
-      processor variants is provided, with a slower C fallback.  Fixed-size operands
-      allow complete loop-unrolling in many cases.)
-\item The library seeks to use FLASH memory as economically as possible.  (The design
-      of the library allows the linker to extract the minimum required, and the code is
-      compacted as much as possible without materially sacrificing speed.)
-\item The library seeks to use RAM as economically as possible (but when a speed/RAM
-      tradeoff exists, speed is chosen so long as the RAM cost is not unreasonable).
-\item Dynamic memory allocation is not used within the library
-      (unlike \emph{The GMP}).\footnote{It is still
-      possible for the library to operate using dynamically-allocated memory,
-      but this memory must be obtained and released by the caller.}
-\item All functions in the library operate on operands of a size known by the
-      caller, and this data size does not change as a result of any
-      library function (unlike \emph{The GMP}).\footnote{All functions
-      either accept operands of a fixed
-      size characteristic of the function, or accept a measure of size
-      as a formal parameter.}
-\item The source code for each library variant is created from templates,
-      so that the source code contains almost no C preprocessor
-      switches.  (The source code is arranged in this way for
-      easier debugging,\footnote{Some source-level debuggers are
-      confused by complex preprocessor switches.} and to remove uncertainty about what has
-      is actually being compiled or assembled.)
-\item The library can be repackaged as three source files (a \emph{.h} header file, a \emph{.c}
-      source file, and an assembly-language file with a target-specific file extension),
-      and used as two software modules within a project rather than as a library.\footnote{The
-      library source code is designed to be used in this way because some debugging tools
-      are awkward at debugging libraries.}\textsuperscript{,}\footnote{These three files are created automatically
-      by the generator program, but it would take typically take substantial manual editing to
-      eliminate unused functions and data structures from these files so that the FLASH footprint
-      is the same as if a library is used.}
-\item The library is made available only as source code.\footnote{The user must
-      have the software tools necessary to compile the source code and create a
-      library.}
-\item The library is thread-safe and core-safe.
-\item The library is designed to be used on multi-core processors without
-      a cache coherency protocol.\footnote{However, the library achieves this by
-      requiring the caller to perform all necessary cache line invalidations
-      and flushes.}
-\item The library is unit tested to MC/DC coverage, and is 
-      expected to contain no software defects.  
+\item The library functions work primarily with fixed-size operands.
+\item The library functions are thread-safe, and:
+      \begin{itemize}
+      \item Can be used in pre-emptive operating systems.
+      \item Can be used in multi-core systems.
+      \item Can be used in interrupt service routines.
+      \end{itemize}
+\item The low-level operations of the library are implemented in assembly language
+      for efficiency.
+\item The library functions use minimal stack space.
+\item A templating tool is used to produce the library in several forms:
+      \begin{itemize}
+      \item A classic library, one function or data structure per compiled module,
+            so that the linker extracts the minimum required to link (this form automatically
+            gives the minimum FLASH footprint).
+      \item Source files with related functions and data structures together (in appearance,
+            resembling what a human programmer might produce if FLASH consumption was not
+            a concern).
+      \end{itemize}
+\item The library, as generated for a specific processor/tool combination, has almost no
+      preprocessor switches.  (The templating tool produces a customized variant
+      of the library for each processor/tool combination.  The elimination of preprocessor
+      switches creates code that is easier to understand and does not confound debugging tools.)
 \end{itemize}
 
 
