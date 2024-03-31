@@ -65,7 +65,7 @@
         <Folder
             Name="Main LaTeX File"
             Filters="">
-            <F N="../../libnum_userman.tex"/>
+            <F N="../../libnum_user_manual.tex"/>
         </Folder>
         <Folder
             Name="Chapter LaTeX Files"
