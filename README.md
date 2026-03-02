@@ -3,68 +3,30 @@
 *LibNum* is a microcontroller-centric thread-safe arithmetic,
 cryptography, and utility library.
 
-The *microcontroller-centric* characteristics of the library
-are:
-- The library contains a rich set of functions that accept
+The user manual for the library is written in *LaTeX* and
+distilled to *.PDF*.  It wouldn't be efficient to duplicate
+the content of the user manual in this *README* file, so please
+refer to the *.pdf* file for information about the Library.
+
+(Need to add link to *.pdf* file.)
+
+The library is microcontroller-centric in that:
+- It contains a rich set of functions that accept
   fixed-size operands whose size is known at compile time, and
   can be used without the upper layers of the library that contain
   dynamic allocation.
-- For efficiency, the lowest level of the library contains
+- The lowest level of the library contains
   assembly-language to support popular CPU cores, and support
-  for other CPU cores can easily be added.  (If assembly-language
-  isn't available for the intended core, a pure C-language
-  implementation is used, but it is much less efficient than
-  the assembly-language implementations.)
-- The library is packaged using tools that allow the source code
+  for other CPU cores can be added.
+- It is packaged using tools that allow the source code
   to be arranged in a variety of ways that may be convenient for
   embedded systems.
-- As an aside, the library is also suitable for larger non-embedded
-  systems such as personal computers and servers; however,
-  it contains features that also make it especially suitable
-  for microcontrollers and embedded systems.
 
-The library is designed using a careful paradigm for thread-safety:
-- 
+As an aside, the library is also suitable for larger non-embedded
+systems such as personal computers and servers. However,
+a strength of the library is that the lower layers (not containing
+variable-sized operands or dynamic allocation)
 
-characteristics of the library
-are:
-
-  The library contains a rich set of  
-
-general utility library, written in C and C++,
-intended primarily for personal
-computer and server *Windows* and _*nix_ platforms (although
-many modules without stream I/O, dynamic memory allocation,
-or exceptions may be suitable for embedded systems).
-
-The mnemonic for the repository name is *Lib*rary, *Gen*eral.
-
-The *LibGen* described here is not related in any way to
-[*Library Genesis*](https://en.wikipedia.org/wiki/Library_Genesis).
-The similarity in naming is accidental.
-
-In computing, *library* often means a group of modules that
-are compiled together into a special object module from which
-a linker is able to extract only the required functions
-and variables.  This is not the definition intended for
-*LibGen*. *LibGen* is intended to be a library used in source
-code form, where the source code of *LibGen* is added as
-necessary to other projects.
-
-*LibGen* makes use of a second library,
-[*LibNum*](https://github.com/dtashley/LibNum).  *LibNum* is
-a standalone library&mdash;it can be used without *LibGen*, and it
-has its own preprocessor symbol space.  It is critical that the
-preprocessor definitions supplied to *LibGen* and *LibNum* are
-consistent with the type of application using the libary, and
-also consistent with each other.  For consistency, the preprocessor
-definitions used by *LibGen* and *LibNum* are largely identical,
-except for the prefix of each symbol (*LBGN_* versus *LBNM_*).
-
-Although it isn't directly relevant to *LibGen*, it should also be
-mentioned that the command-line parameter definitions specified
-in [*Emts*](https://github.com/dtashley/Emts) are shared by
-most tools authored by Dave Ashley.
 
 ## Current Status
 
