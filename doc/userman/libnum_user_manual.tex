@@ -13,6 +13,7 @@
 \usepackage{makeidx}
 %
 %Define certain conspicuous global constants.
+\newcommand{\productdesctitle}{A Microcontroller-Centric Arithmetic, Cryptography, and Utility Library}
 \newcommand{\productbasenamelong}{Microcontroller-Centric Arithmetic, Cryptography, and Utility Library}
 \newcommand{\productbasenameshort}{LibNum}
 \newcommand{\productbasenameultrashort}{Ln}
@@ -277,12 +278,12 @@
 %--------------------------------------------------------------------------------
 %By default, LaTeX sectioning commands make the chapter or section title
 %available for use by page headers and the like. Page headers operate in a rather
-%constrained area, and it’s common for titles too be too big to fit: the LaTeX
+%constrained area, and itï¿½s common for titles too be too big to fit: the LaTeX
 %sectioning commands therefore take an optional argument:
 %
 %\section[short title]{full title}
 %
-%If the ‹short title› is present, it is used both for the table of contents and
+%If the ï¿½short titleï¿½ is present, it is used both for the table of contents and
 %for the page heading. The usual answer to people who complain that their title
 %is too big for the running head is to suggest that they the optional argument.
 %
@@ -292,13 +293,13 @@
 %of contents entry, and a really terse entry in the running head.
 %
 %One of the problems is the tendency of page headings to be set in capitals
-%(which take up more space); so why not set headings as written for “ordinary”
-%reading? It’s not possible to do so with unmodified LaTeX, but the fancyhdr
+%(which take up more space); so why not set headings as written for ï¿½ordinaryï¿½
+%reading? Itï¿½s not possible to do so with unmodified LaTeX, but the fancyhdr
 %package provides a command \nouppercase for use in its header (and footer)
-%lines to suppress LaTeX’s uppercasing tendencies. Classes in the KOMA-script
-%bundle don’t uppercase in the first place.
+%lines to suppress LaTeXï¿½s uppercasing tendencies. Classes in the KOMA-script
+%bundle donï¿½t uppercase in the first place.
 %
-%In fact, the sectioning commands use “mark” commands to pass information to the
+%In fact, the sectioning commands use ï¿½markï¿½ commands to pass information to the
 %page headers. For example, \chapter uses \chaptermark, \section uses
 %\sectionmark, and so on. With this knowledge, one can achieve a three-layer
 %structure for chapters:
@@ -320,11 +321,11 @@
 %
 %(the first \sectionmark deals with the header of the page the \section command
 %falls on, and the second deal with subsequent pages; note that here, you need the 
-%ptional argument to \section, even if “middling version” is in fact the same text
-%as “long version”.)
+%ptional argument to \section, even if ï¿½middling versionï¿½ is in fact the same text
+%as ï¿½long versionï¿½.)
 %
-%A similar arrangement is necessary even for chapters if the class you’re using is
-%odd enough that it puts a page header on a chapter’s opening page.
+%A similar arrangement is necessary even for chapters if the class youï¿½re using is
+%odd enough that it puts a page header on a chapterï¿½s opening page.
 %
 %Note that the titlesec package manages the running heads in a completely different
 %fashion; for example, you can use the optional argument of sectioning commands
