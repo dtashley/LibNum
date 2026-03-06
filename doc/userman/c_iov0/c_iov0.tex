@@ -15,7 +15,7 @@
 \emph{\productbasenameshort{}}) is a microcontroller-centric\footnote{The
 library is also suitable for personal computers.  This is described in more
 detail later in this section.}
-multi-threaded \emph{C}/\emph{C++}-callable 
+multi-threaded C/C++-callable 
 arith\-me\-tic/\-math\-e\-mat\-i\-cal/\-cryp\-to\-graph\-ic 
 software library.
 
@@ -64,7 +64,22 @@ The library includes functionality for:
 for use in embedded systems:
 
 \begin{itemize}
-\item The library functions work primarily with fixed-size operands.
+\item The library contains a rich set of functions that work with fixed-size operands.
+      \begin{itemize}
+      \item These functions are often the only type desired in embedded systems, because
+            they always execute more quickly than functions that accept operands
+            or arbitrary size (in effect,
+            loops have already been unrolled), and are often more compact.
+      \end{itemize}
+\item The library is designed for minimal FLASH footprint.
+      \begin{itemize}
+      \item The library uses generation tools that can provide only the source code
+            necessary to resolve linker references.  This gives a minimal FLASH
+            footprint (nothing unnecessary is included in the source code),
+            and makes debugging easier (some debuggers don't work well with
+            libraries, and the generation tools effectively convert the library
+            to a set or source files.)
+      \end{itemize}
 \item The library functions are thread-safe, and:
       \begin{itemize}
       \item Can be used in pre-emptive operating systems.
