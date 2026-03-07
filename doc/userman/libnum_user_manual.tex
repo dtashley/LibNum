@@ -12,29 +12,14 @@
 \usepackage{longtable}
 \usepackage{makeidx}
 %
-%Define certain conspicuous global constants.
-\newcommand{\productdesctitle}{A Microcontroller-Centric Arithmetic, Cryptography, and Utility Library}
-\newcommand{\productbasenamelong}{Microcontroller-Centric Arithmetic, Cryptography, and Utility Library}
-\newcommand{\productbasenameshort}{LibNum}
-\newcommand{\productbasenameultrashort}{Ln}
-\newcommand{\productversion}{0.0a}
-\newcommand{\productname}{\productbasenameshort{}-\productversion}
-%
-%Used to correct bad typesetting of space after underscore.  No idea why
-%this occurs.
-\newcommand{\underscorepostspace}{\kern 0.1em}
-
-%Used for non-breaking space between "Chapter" and the chapter number.
-%With a stretchable space, it doesn't look quite right when the chapters
-%are described individually and there are bullet points in a row but the
-%chapter numbers don't line up.
-\newcommand{\postchapterwordnonstretchable}{\kern 0.3333em}
-
 %Embarrassingly, I've forgotten why "makeindex" is necessary ...
 \makeindex
 %
 %Shared mathematical definitions
 \input{comps/workmdef}
+%
+%Miscellaneous typesetting definitions
+\input{comps/worktypesetdefs}
 %
 %Hyphenation exceptions
 \input{comps/workhxcp}
@@ -42,23 +27,13 @@
 %New environments, etc.
 \input{comps/worknenv}
 %
+%Product name; user manual title; part, chapter, and section titles
+\input{comps/worktitlechapdefs}
+%
 \begin{document}
 %
-%"See" definitions for the index.
-\index{---ceiling@$\lceil  \cdot \rceil$|see{ceiling function}}
-\index{---floor@$\lfloor \cdot \rfloor$|see{floor function}}
-\index{---divides@$\vworkdivides$|see{divides}}
-\index{---divides@$\vworknotdivides$|see{divides}}
-\index{2's complement|see{two's complement}}
-\index{ABI|see{application binary interface}}
-\index{ASMP|see{asymmetric multiprocessor}}
-\index{cardinality|see{set cardinality}}
-\index{Donald E. Knuth|see{Knuth, Donald E.}}
-\index{fetch|see{instruction fetch}}
-\index{Leslie Lamport|see{Lamport, Leslie}}
-\index{OOE|see{out-of-order execution}}
-\index{retirement|see{instruction retirement}}
-\index{SMP|see{symmetric multiprocessor}}
+%index "see" definitions
+\input{comps/workindexsees}
 %
 %Title page(s)
 \input{comps/workttla}
@@ -88,6 +63,9 @@
 
 % Chapter: Detailed Description of LibNum
 \input{c_ldd0/c_ldd0}
+
+% Chapter: The LibNum Generator
+\input{c_lgn0/c_lgn0}
 
 % Part: Technical Background
 \part{Technical Background}
@@ -278,12 +256,12 @@
 %--------------------------------------------------------------------------------
 %By default, LaTeX sectioning commands make the chapter or section title
 %available for use by page headers and the like. Page headers operate in a rather
-%constrained area, and it�s common for titles too be too big to fit: the LaTeX
+%constrained area, and its common for titles too be too big to fit: the LaTeX
 %sectioning commands therefore take an optional argument:
 %
 %\section[short title]{full title}
 %
-%If the �short title� is present, it is used both for the table of contents and
+%If the short title is present, it is used both for the table of contents and
 %for the page heading. The usual answer to people who complain that their title
 %is too big for the running head is to suggest that they the optional argument.
 %

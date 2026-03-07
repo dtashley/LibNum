@@ -1,0 +1,37 @@
+%----------------------------------------------------------------------------------------------------
+%LibNum user manual title and chapter definitions.
+%----------------------------------------------------------------------------------------------------
+%These definitions are used in the following ways:
+%   (a)To form the text of the user manual title and chapter titles.
+%   (b)For use within this work, if one chapter (or frontmatter item) needs to refer to not
+%      only the chapter number or start page, but title as well.
+%----------------------------------------------------------------------------------------------------
+%In the chapter titles below, there are three types of titles.
+%   longtitle  : Appears as the actual text at the start of the chapter.
+%   title      : Appears in table of contents.
+%   shorttitle : Appears in running headers.
+%----------------------------------------------------------------------------------------------------
+%In rare cases (where sections are cited between the two documents), section titles may
+%appear below, as well.
+%----------------------------------------------------------------------------------------------------
+%Define certain conspicuous global constants.
+\newcommand{\productdesctitle}{A Microcontroller-Centric Arithmetic, Cryptography, and Utility Library}
+\newcommand{\productbasenamelong}{Microcontroller-Centric Arithmetic, Cryptography, and Utility Library}
+\newcommand{\productbasenameshort}{LibNum}
+\newcommand{\productbasenameultrashort}{Ln}
+\newcommand{\productversion}{0.0a}
+\newcommand{\productname}{\productbasenameshort{}-\productversion}
+%----------------------------------------------------------------------------------------------------
+%Used for non-breaking space between "Chapter" and the chapter number.
+%With a stretchable space, it doesn't look quite right when the chapters
+%are described individually and there are bullet points in a row but the
+%chapter numbers don't line up.
+\newcommand{\postchapterwordnonstretchable}{\kern 0.3333em}
+%----------------------------------------------------------------------------------------------------
+%CINT0: Introduction To Small Microcontroller Work
+\newcommand\ciovzerolongtitle{Introduction and Overview}
+\newcommand\ciovzerotitle{Introduction and Overview}
+\newcommand\ciovzeroshorttitle{Introduction and Overview}
+%----------------------------------------------------------------------------------------------------
+%End of worktitlechapdefs.tex
+%----------------------------------------------------------------------------------------------------
