@@ -12,9 +12,7 @@
 \index{LibNum@\emph{LibNum}}The library described in this document,
 \emph{\productbasenameshort{} Version \productversion{}} (or more compactly,
 \emph{\productbasenameshort{}-\productversion{}} or
-\emph{\productbasenameshort{}}) is a microcontroller-centric\footnote{The
-library is also suitable for personal computers.  This is described in more
-detail later in this section.}
+\emph{\productbasenameshort{}}) is a microcontroller-centric
 multi-threaded C/C++-callable 
 arith\-me\-tic/\-math\-e\-mat\-i\-cal/\-cryp\-to\-graph\-ic 
 software library.
@@ -61,49 +59,44 @@ The library includes functionality for:
 \end{itemize}
 
 \emph{\productbasenameshort{}} has the following features that make it suitable
-for use in embedded systems:
+for use with microcontrollers in embedded systems.
 
 \begin{itemize}
 \item The library contains a rich set of functions that work with fixed-size operands.
-      \begin{itemize}
-      \item These functions are often the only type desired in embedded systems, because
-            they always execute more quickly than functions that accept operands
-            or arbitrary size (in effect,
-            loops have already been unrolled), and are often more compact.
-      \end{itemize}
+      (Functions that work with fixed-size operands are often preferred in
+      embedded systems because they execute more quickly and often have a smaller
+      FLASH footprint.)
 \item The library is designed for minimal FLASH footprint.
-      \begin{itemize}
-      \item The library uses generation tools that can provide only the source code
-            necessary to resolve linker references.  This gives a minimal FLASH
-            footprint (nothing unnecessary is included in the source code),
-            and makes debugging easier (some debuggers don't work well with
-            libraries, and the generation tools effectively convert the library
-            to a set or source files.)
-      \end{itemize}
-\item The library functions are thread-safe, and:
-      \begin{itemize}
-      \item Can be used in pre-emptive operating systems.
-      \item Can be used in multi-core systems.
-      \item Can be used in interrupt service routines.
-      \end{itemize}
+      (The library uses generation tools that can provide only the source code
+      necessary to resolve linker references.  This gives minimal
+      FLASH footprint and better compatibility with debuggers,
+      as debuggers often work better with source code incorporated into
+      a project than with proper libaries.)
+\item The library functions are thread-safe, so they can be used in
+      multi-threaded applications.
 \item The low-level operations of the library are implemented in assembly language
-      for efficiency.
-\item The library functions use minimal stack space.
-\item A templating tool is used to produce the library in several forms:
-      \begin{itemize}
-      \item A classic library, one function or data structure per compiled module,
-            so that the linker extracts the minimum required to link (this form automatically
-            gives the minimum FLASH footprint).
-      \item Source files with related functions and data structures together (in appearance,
-            resembling what a human programmer might produce if FLASH consumption was not
-            a concern).
-      \end{itemize}
-\item The library, as generated for a specific processor/tool combination, has almost no
-      preprocessor switches.  (The templating tool produces a customized variant
-      of the library for each processor/tool combination.  The elimination of preprocessor
-      switches creates code that is easier to understand and does not confound debugging tools.)
+      for efficiency.  (Popular platforms are supported, and it is easy
+      to add assembly language for additional platforms. There is a C-language fallback
+      for unsupported platforms.)
+\item The library functions use minimal stack space.  (The RAM utilization
+      paradigm of the library is carefully designed to minimize stack
+      consumption.)
 \end{itemize}
 
+The features that make \emph{LibNum} suitable for embedded systems do
+not make it unsuitable for personal computers.  The differences in likely
+utilization of \emph{LibNum} between embedded systems and personal
+computer applications are likely:
+
+\begin{itemize}
+\item Embedded systems are more likely to use the functions of
+      \emph{LibNum} that are useful in control applications
+      (debouncing, filtering, etc.).
+\item Embedded systems are more likely to use the functions of
+      \emph{LibNum} that accept fixed-size operands, whereas
+      personal computer applications are more likely to use
+      the functions that accept operands of arbitrary size.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,7 +104,8 @@ for use in embedded systems:
 \section{Acknowledgments}
 \label{ciov0:sack0}
  
-TBD. 
+I'm very grateful to the authors of the GMP. Many concepts
+of this library were borrowed from the GMP.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
