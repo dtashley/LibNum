@@ -8,5 +8,21 @@
 \section{Introduction and Overview}
 \label{clgn0:siov0}
 
-TBD.
+The LibNum generator should be able to generate
+files in these forms.
+
+\begin{itemize}
+\item Source modules, arranged as per diagram, customized
+      for platform,
+      files can be used or not used in their entirety.
+\item Source modules, arranged as per diagram, customized
+      for platform, customized by used entry points,
+      all unused functions omitted.
+\item Traditional library, symbols resolved by linker.
+      This generally requires one source file per function
+      or data structure.
+\item 1-2 source file, customized for platform, all functions
+      and data strutures grouped together by the (C versus
+      assembly-language).
+\end{itemize}
 
